@@ -1,176 +1,210 @@
 Chào bạn,
 
-Với vai trò là Senior Business Analyst của hệ thống ONENET, tôi đã tiếp nhận và phân tích các yêu cầu nghiệp vụ về tính năng quản lý thông tin cá nhân học sinh. Dựa trên các yêu cầu đã cung cấp, tôi xin trình bày các User Stories và Acceptance Criteria chi tiết như sau, tập trung hoàn toàn vào nghiệp vụ và không đề cập đến công nghệ.
+Với vai trò là Senior Business Analyst của hệ thống ONENET, tôi đã tiếp nhận và phân tích các yêu cầu nghiệp vụ bạn đưa ra về tính năng quản lý thông tin cá nhân học sinh. Dựa trên phân tích, tôi đã làm rõ nghiệp vụ, xác định các User Story và Acceptance Criteria theo định dạng chuẩn mà chúng ta thường sử dụng.
 
 ---
 
-### **TÀI LIỆU PHÂN TÍCH YÊU CẦU NGHIỆP VỤ**
+## Phân tích Yêu cầu Nghiệp vụ - Quản lý Thông tin Cá nhân Học sinh
 
 **Hệ thống:** ONENET
-**Tính năng:** Quản lý thông tin cá nhân học sinh
-**Ngày tạo:** 18/05/2024
-**Người phân tích:** [Tên Business Analyst - Tức là tôi]
+**Phân hệ/Tính năng:** Quản lý Học sinh
+
+### I. Xác định Vai trò (User Role)
+
+Dựa trên các chức năng yêu cầu, vai trò chính sẽ tương tác với hệ thống để quản lý thông tin học sinh là:
+*   **Giáo vụ:** (Academic Affairs Officer / Registrar) - Người chịu trách nhiệm quản lý hồ sơ và thông tin học sinh.
+*   **Quản trị viên:** (Administrator) - Có thể có quyền tương tự hoặc cao hơn để quản lý chung.
+
+Trong phạm vi các User Story dưới đây, chúng ta sẽ sử dụng vai trò **"Giáo vụ"** làm đại diện cho người thực hiện các thao tác quản lý học sinh.
+
+### II. Các User Stories và Tiêu chí Chấp nhận (Acceptance Criteria)
+
+Dưới đây là các User Story được xác định, kèm theo mô tả nghiệp vụ và các tiêu chí chấp nhận chi tiết.
 
 ---
 
-#### **I. MÔ TẢ TỔNG QUAN**
+#### User Story 1: Thêm học sinh mới
 
-Tính năng này nhằm mục đích cho phép người dùng có thẩm quyền (Người quản lý học sinh) thực hiện các thao tác cơ bản và nâng cao để quản lý thông tin cá nhân của học sinh trong hệ thống ONENET, bao gồm thêm mới, sửa, xóa, xem danh sách, và tìm kiếm/lọc thông tin. Mục tiêu là đảm bảo dữ liệu học sinh được lưu trữ đầy đủ, chính xác và dễ dàng truy xuất.
-
----
-
-#### **II. DANH SÁCH USER STORIES VÀ ACCEPTANCE CRITERIA**
-
-Dưới đây là các User Stories và Acceptance Criteria được xác định cho tính năng "Quản lý thông tin cá nhân học sinh":
-
----
-
-**USER STORY 1: Thêm học sinh mới**
-
-*   **ID:** US_HS_001
-*   **Tiêu đề:** Thêm thông tin một học sinh mới
-*   **Mô tả:**
-    *   **Với tư cách là một Người quản lý học sinh**, tôi muốn **thêm thông tin một học sinh mới vào hệ thống**,
-    *   **Để hệ thống có thể lưu trữ và quản lý thông tin của học sinh đó một cách đầy đủ.**
+*   **User Story ID:** ONENET-HS-001
+*   **User Story Name:** Thêm học sinh mới vào hệ thống
+*   **Role:** Giáo vụ
+*   **Description:**
+    *   Với tư cách là một Giáo vụ, tôi muốn có thể nhập và lưu trữ thông tin cá nhân của một học sinh mới vào hệ thống, để tôi có thể quản lý hồ sơ học sinh một cách đầy đủ và kịp thời.
+*   **Priority:** Cao (High)
 
 *   **Acceptance Criteria:**
-    *   **AC1.1 - Hiển thị biểu mẫu nhập liệu:**
-        *   **GIVEN** Tôi là Người quản lý học sinh.
-        *   **WHEN** Tôi chọn chức năng "Thêm học sinh mới".
-        *   **THEN** Hệ thống hiển thị một biểu mẫu (form) để nhập các thông tin sau:
-            *   **Họ và tên:** (Bắt buộc, kiểu chuỗi, tối đa 100 ký tự, không chứa ký tự đặc biệt ngoài khoảng trắng và dấu nháy đơn, ví dụ: O'Connor)
-            *   **Ngày sinh:** (Bắt buộc, kiểu ngày, định dạng DD/MM/YYYY, phải là ngày trong quá khứ hoặc hiện tại)
-            *   **Giới tính:** (Bắt buộc, chọn từ danh sách có sẵn: Nam, Nữ, Khác)
-            *   **Địa chỉ:** (Bắt buộc, kiểu chuỗi, tối đa 255 ký tự)
-            *   **Số điện thoại phụ huynh:** (Bắt buộc, kiểu chuỗi số, định dạng số điện thoại Việt Nam hợp lệ (10 hoặc 11 chữ số), chỉ chứa các ký tự số)
-            *   **Lớp học:** (Bắt buộc, kiểu chuỗi, tối đa 20 ký tự)
-            *   **Mã học sinh:** (Bắt buộc, kiểu chuỗi, duy nhất, tối đa 20 ký tự, chỉ chứa chữ cái, số, gạch ngang '-', gạch dưới '_', không chứa khoảng trắng)
-    *   **AC1.2 - Lưu thông tin học sinh thành công:**
-        *   **GIVEN** Tôi đã điền đầy đủ và hợp lệ tất cả các thông tin vào biểu mẫu "Thêm học sinh mới".
-        *   **WHEN** Tôi nhấn nút "Lưu" (hoặc "Thêm").
-        *   **THEN** Hệ thống lưu thông tin học sinh mới vào cơ sở dữ liệu.
-        *   **AND THEN** Hệ thống hiển thị thông báo "Thêm học sinh thành công."
-        *   **AND THEN** Hệ thống chuyển tôi về trang danh sách học sinh hoặc hiển thị chi tiết học sinh vừa thêm.
-    *   **AC1.3 - Xử lý trường hợp nhập liệu thiếu/sai định dạng:**
-        *   **GIVEN** Tôi đã điền thông tin vào biểu mẫu "Thêm học sinh mới" nhưng thiếu hoặc nhập sai định dạng ít nhất một trường bắt buộc.
-        *   **WHEN** Tôi nhấn nút "Lưu" (hoặc "Thêm").
-        *   **THEN** Hệ thống hiển thị thông báo lỗi rõ ràng bên cạnh từng trường bị lỗi (ví dụ: "Họ và tên không được để trống", "Ngày sinh không hợp lệ", "Số điện thoại không đúng định dạng").
-        *   **AND THEN** Hệ thống không cho phép lưu thông tin học sinh.
-    *   **AC1.4 - Xử lý Mã học sinh trùng lặp:**
-        *   **GIVEN** Tôi đã điền đầy đủ và hợp lệ các thông tin, nhưng "Mã học sinh" mà tôi nhập đã tồn tại trong hệ thống.
-        *   **WHEN** Tôi nhấn nút "Lưu" (hoặc "Thêm").
-        *   **THEN** Hệ thống hiển thị thông báo lỗi "Mã học sinh [Mã học sinh đã nhập] đã tồn tại. Vui lòng chọn Mã học sinh khác."
-        *   **AND THEN** Hệ thống không cho phép lưu thông tin học sinh.
+    *   **Scenario 1.1: Thêm học sinh thành công với thông tin hợp lệ**
+        *   **Given** tôi đang ở trang "Thêm học sinh mới".
+        *   **And** tôi nhập đầy đủ và hợp lệ tất cả các thông tin bắt buộc:
+            *   Họ và tên (ví dụ: "Nguyễn Văn A")
+            *   Ngày sinh (ví dụ: "01/01/2010")
+            *   Giới tính (ví dụ: "Nam", "Nữ", "Khác")
+            *   Địa chỉ (ví dụ: "123 Đường ABC, Quận XYZ, TP.HCM")
+            *   Số điện thoại phụ huynh (ví dụ: "0901234567")
+            *   Lớp học (ví dụ: "10A1", "12B2")
+            *   Mã học sinh (ví dụ: "HS2024001") - **DUY NHẤT**
+        *   **When** tôi nhấn nút "Lưu".
+        *   **Then** hệ thống sẽ tạo một hồ sơ học sinh mới với các thông tin đã nhập.
+        *   **And** hệ thống hiển thị thông báo xác nhận "Thêm học sinh thành công".
+        *   **And** học sinh mới này sẽ xuất hiện trong danh sách học sinh.
+
+    *   **Scenario 1.2: Thêm học sinh không thành công do thiếu thông tin bắt buộc**
+        *   **Given** tôi đang ở trang "Thêm học sinh mới".
+        *   **And** tôi để trống một hoặc nhiều trường thông tin bắt buộc (ví dụ: Họ và tên, Ngày sinh, Mã học sinh).
+        *   **When** tôi nhấn nút "Lưu".
+        *   **Then** hệ thống không tạo hồ sơ học sinh mới.
+        *   **And** hệ thống hiển thị thông báo lỗi yêu cầu nhập đầy đủ thông tin còn thiếu (ví dụ: "Họ và tên không được để trống.").
+
+    *   **Scenario 1.3: Thêm học sinh không thành công do Mã học sinh đã tồn tại**
+        *   **Given** tôi đang ở trang "Thêm học sinh mới".
+        *   **And** tôi nhập một "Mã học sinh" đã tồn tại trong hệ thống.
+        *   **And** các thông tin khác đều hợp lệ.
+        *   **When** tôi nhấn nút "Lưu".
+        *   **Then** hệ thống không tạo hồ sơ học sinh mới.
+        *   **And** hệ thống hiển thị thông báo lỗi "Mã học sinh [Mã HS đã nhập] đã tồn tại trong hệ thống. Vui lòng nhập mã khác."
+
+    *   **Scenario 1.4: Thêm học sinh không thành công do định dạng dữ liệu không hợp lệ**
+        *   **Given** tôi đang ở trang "Thêm học sinh mới".
+        *   **And** tôi nhập một trường thông tin với định dạng không hợp lệ (ví dụ: Ngày sinh là ngày trong tương lai, Số điện thoại phụ huynh chứa chữ cái).
+        *   **And** các thông tin khác đều hợp lệ.
+        *   **When** tôi nhấn nút "Lưu".
+        *   **Then** hệ thống không tạo hồ sơ học sinh mới.
+        *   **And** hệ thống hiển thị thông báo lỗi về định dạng sai của trường dữ liệu tương ứng (ví dụ: "Ngày sinh không được lớn hơn ngày hiện tại.", "Số điện thoại không hợp lệ.").
 
 ---
 
-**USER STORY 2: Sửa thông tin học sinh**
+#### User Story 2: Sửa thông tin học sinh
 
-*   **ID:** US_HS_002
-*   **Tiêu đề:** Chỉnh sửa thông tin của một học sinh hiện có
-*   **Mô tả:**
-    *   **Với tư cách là một Người quản lý học sinh**, tôi muốn **chỉnh sửa thông tin của một học sinh hiện có trong hệ thống**,
-    *   **Để thông tin của học sinh đó luôn được cập nhật chính xác và phản ánh đúng thực tế.**
+*   **User Story ID:** ONENET-HS-002
+*   **User Story Name:** Cập nhật thông tin cá nhân của học sinh
+*   **Role:** Giáo vụ
+*   **Description:**
+    *   Với tư cách là một Giáo vụ, tôi muốn có thể chỉnh sửa các thông tin cá nhân của một học sinh đã có trong hệ thống, để đảm bảo hồ sơ luôn được cập nhật chính xác nhất.
+*   **Priority:** Cao (High)
 
 *   **Acceptance Criteria:**
-    *   **AC2.1 - Hiển thị biểu mẫu chỉnh sửa với dữ liệu có sẵn:**
-        *   **GIVEN** Tôi là Người quản lý học sinh và một học sinh đã tồn tại trong hệ thống.
-        *   **WHEN** Tôi chọn chức năng "Sửa thông tin" cho một học sinh cụ thể (ví dụ: từ danh sách học sinh).
-        *   **THEN** Hệ thống hiển thị một biểu mẫu với tất cả các thông tin hiện tại của học sinh đó được điền sẵn.
-        *   **THEN** Trường "Mã học sinh" sẽ không cho phép chỉnh sửa (read-only) để đảm bảo tính duy nhất của mã định danh.
-        *   **THEN** Các trường thông tin khác (Họ và tên, Ngày sinh, Giới tính, Địa chỉ, Số điện thoại phụ huynh, Lớp học) có thể chỉnh sửa.
-    *   **AC2.2 - Cập nhật thông tin học sinh thành công:**
-        *   **GIVEN** Tôi đã chỉnh sửa một hoặc nhiều trường thông tin của học sinh với dữ liệu hợp lệ trong biểu mẫu.
-        *   **WHEN** Tôi nhấn nút "Cập nhật" (hoặc "Lưu").
-        *   **THEN** Hệ thống cập nhật thông tin học sinh trong cơ sở dữ liệu.
-        *   **AND THEN** Hệ thống hiển thị thông báo "Cập nhật thông tin học sinh thành công."
-        *   **AND THEN** Hệ thống chuyển tôi về trang danh sách học sinh hoặc hiển thị chi tiết học sinh vừa cập nhật.
-    *   **AC2.3 - Xử lý trường hợp nhập liệu thiếu/sai định dạng khi chỉnh sửa:**
-        *   **GIVEN** Tôi đã chỉnh sửa thông tin nhưng để trống hoặc nhập sai định dạng ít nhất một trường bắt buộc (ví dụ: ngày sinh tương lai, số điện thoại sai định dạng).
-        *   **WHEN** Tôi nhấn nút "Cập nhật" (hoặc "Lưu").
-        *   **THEN** Hệ thống hiển thị thông báo lỗi rõ ràng bên cạnh từng trường bị lỗi.
-        *   **AND THEN** Hệ thống không cho phép cập nhật thông tin học sinh.
+    *   **Scenario 2.1: Cập nhật thông tin học sinh thành công**
+        *   **Given** tôi đang xem thông tin chi tiết của một học sinh hiện có trong hệ thống.
+        *   **And** tôi chọn chức năng "Sửa" hoặc biểu tượng chỉnh sửa.
+        *   **And** tôi thay đổi một hoặc nhiều trường thông tin cá nhân (ví dụ: Địa chỉ, Số điện thoại phụ huynh, Lớp học). (Lưu ý: Mã học sinh không được phép chỉnh sửa sau khi tạo).
+        *   **When** tôi nhấn nút "Lưu" hoặc "Cập nhật".
+        *   **Then** hệ thống sẽ lưu các thay đổi vào hồ sơ học sinh đó.
+        *   **And** hệ thống hiển thị thông báo xác nhận "Cập nhật thông tin học sinh thành công".
+        *   **And** thông tin hiển thị của học sinh được cập nhật theo thay đổi mới.
+
+    *   **Scenario 2.2: Cập nhật thông tin không thành công do định dạng dữ liệu không hợp lệ**
+        *   **Given** tôi đang chỉnh sửa thông tin của một học sinh.
+        *   **And** tôi thay đổi một trường thông tin thành giá trị không hợp lệ (ví dụ: Ngày sinh về một ngày trong tương lai).
+        *   **When** tôi nhấn nút "Lưu" hoặc "Cập nhật".
+        *   **Then** hệ thống không lưu các thay đổi.
+        *   **And** hệ thống hiển thị thông báo lỗi về định dạng sai của trường dữ liệu tương ứng (ví dụ: "Ngày sinh không được lớn hơn ngày hiện tại.").
+
+    *   **Scenario 2.3: Hủy bỏ thao tác cập nhật**
+        *   **Given** tôi đang chỉnh sửa thông tin của một học sinh.
+        *   **And** tôi đã thay đổi một số thông tin.
+        *   **When** tôi nhấn nút "Hủy" hoặc đóng màn hình chỉnh sửa mà không lưu.
+        *   **Then** hệ thống không lưu bất kỳ thay đổi nào.
+        *   **And** thông tin học sinh vẫn giữ nguyên như trước khi chỉnh sửa.
 
 ---
 
-**USER STORY 3: Xóa thông tin học sinh**
+#### User Story 3: Xóa học sinh
 
-*   **ID:** US_HS_003
-*   **Tiêu đề:** Xóa thông tin của một học sinh khỏi hệ thống
-*   **Mô tả:**
-    *   **Với tư cách là một Người quản lý học sinh**, tôi muốn **xóa thông tin của một học sinh không còn phù hợp khỏi hệ thống**,
-    *   **Để loại bỏ các hồ sơ không cần thiết và giữ cho dữ liệu luôn được cập nhật.**
+*   **User Story ID:** ONENET-HS-003
+*   **User Story Name:** Xóa thông tin học sinh khỏi hệ thống
+*   **Role:** Giáo vụ
+*   **Description:**
+    *   Với tư cách là một Giáo vụ, tôi muốn có thể xóa bỏ thông tin của một học sinh không còn phù hợp khỏi hệ thống, để loại bỏ dữ liệu dư thừa hoặc sai lệch.
+*   **Priority:** Cao (High)
 
 *   **Acceptance Criteria:**
-    *   **AC3.1 - Yêu cầu xác nhận trước khi xóa:**
-        *   **GIVEN** Tôi là Người quản lý học sinh và một học sinh đã tồn tại trong hệ thống.
-        *   **WHEN** Tôi chọn chức năng "Xóa" cho một học sinh cụ thể (ví dụ: từ danh sách).
-        *   **THEN** Hệ thống hiển thị một hộp thoại xác nhận ("Bạn có chắc chắn muốn xóa học sinh [Tên Học Sinh] (Mã: [Mã Học Sinh]) không? Thao tác này không thể hoàn tác.").
-    *   **AC3.2 - Xóa học sinh thành công:**
-        *   **GIVEN** Hộp thoại xác nhận xóa đang hiển thị.
-        *   **WHEN** Tôi xác nhận muốn xóa (ví dụ: nhấn nút "Đồng ý" hoặc "Xóa").
-        *   **THEN** Hệ thống xóa thông tin học sinh đó khỏi cơ sở dữ liệu.
-        *   **AND THEN** Hệ thống hiển thị thông báo "Xóa học sinh thành công."
-        *   **AND THEN** Học sinh đã xóa không còn xuất hiện trong danh sách học sinh.
-    *   **AC3.3 - Hủy bỏ thao tác xóa:**
-        *   **GIVEN** Hộp thoại xác nhận xóa đang hiển thị.
-        *   **WHEN** Tôi hủy bỏ thao tác xóa (ví dụ: nhấn nút "Hủy" hoặc đóng hộp thoại).
-        *   **THEN** Thông tin học sinh vẫn còn trong hệ thống và không có thay đổi nào xảy ra.
-        *   **AND THEN** Hộp thoại xác nhận biến mất.
-    *   **AC3.4 - Xử lý trường hợp không tìm thấy học sinh để xóa:**
-        *   **GIVEN** Tôi cố gắng xóa một học sinh mà thông tin của họ không còn tồn tại trong hệ thống (trường hợp hiếm gặp do đồng thời hoặc lỗi dữ liệu).
-        *   **WHEN** Hệ thống xử lý yêu cầu xóa.
-        *   **THEN** Hệ thống hiển thị thông báo lỗi "Không tìm thấy học sinh để xóa."
+    *   **Scenario 3.1: Xóa học sinh thành công**
+        *   **Given** tôi đang xem danh sách học sinh hoặc thông tin chi tiết của một học sinh.
+        *   **And** tôi chọn một học sinh cụ thể để xóa.
+        *   **When** tôi nhấn nút "Xóa" hoặc biểu tượng xóa.
+        *   **And** hệ thống hiển thị hộp thoại xác nhận "Bạn có chắc chắn muốn xóa học sinh [Tên học sinh] không? Thao tác này không thể hoàn tác.".
+        *   **And** tôi chọn "Đồng ý" hoặc "Xác nhận" trong hộp thoại xác nhận.
+        *   **Then** hệ thống sẽ xóa thông tin học sinh đó khỏi cơ sở dữ liệu.
+        *   **And** học sinh đó sẽ không còn xuất hiện trong danh sách học sinh.
+        *   **And** hệ thống hiển thị thông báo xác nhận "Xóa học sinh thành công".
+
+    *   **Scenario 3.2: Hủy bỏ thao tác xóa học sinh**
+        *   **Given** tôi đang xem danh sách học sinh hoặc thông tin chi tiết của một học sinh.
+        *   **And** tôi chọn một học sinh cụ thể để xóa.
+        *   **When** tôi nhấn nút "Xóa" hoặc biểu tượng xóa.
+        *   **And** hệ thống hiển thị hộp thoại xác nhận.
+        *   **And** tôi chọn "Hủy" hoặc đóng hộp thoại xác nhận.
+        *   **Then** hệ thống không xóa thông tin học sinh đó.
+        *   **And** học sinh đó vẫn xuất hiện trong danh sách học sinh.
 
 ---
 
-**USER STORY 4: Xem danh sách học sinh với tìm kiếm/lọc**
+#### User Story 4: Xem danh sách học sinh và tìm kiếm/lọc
 
-*   **ID:** US_HS_004
-*   **Tiêu đề:** Xem danh sách học sinh và thực hiện tìm kiếm/lọc
-*   **Mô tả:**
-    *   **Với tư cách là một Người quản lý học sinh**, tôi muốn **xem danh sách tất cả học sinh, cũng như tìm kiếm và lọc theo các tiêu chí khác nhau**,
-    *   **Để tôi có thể dễ dàng tra cứu, tìm kiếm và quản lý thông tin học sinh một cách hiệu quả.**
+*   **User Story ID:** ONENET-HS-004
+*   **User Story Name:** Xem, tìm kiếm và lọc danh sách học sinh
+*   **Role:** Giáo vụ
+*   **Description:**
+    *   Với tư cách là một Giáo vụ, tôi muốn có thể xem danh sách tất cả học sinh, và có khả năng tìm kiếm hoặc lọc danh sách đó, để tôi có thể nhanh chóng truy cập thông tin của học sinh cần thiết.
+*   **Priority:** Cao (High)
 
 *   **Acceptance Criteria:**
-    *   **AC4.1 - Hiển thị danh sách học sinh mặc định:**
-        *   **GIVEN** Tôi là Người quản lý học sinh.
-        *   **WHEN** Tôi truy cập chức năng "Xem danh sách học sinh".
-        *   **THEN** Hệ thống hiển thị một bảng chứa danh sách tất cả học sinh hiện có.
-        *   **THEN** Mỗi hàng trong bảng hiển thị các thông tin chính của học sinh bao gồm: Mã học sinh, Họ và tên, Ngày sinh, Giới tính, Lớp học, Địa chỉ, Số điện thoại phụ huynh.
-        *   **THEN** Danh sách được sắp xếp mặc định theo Họ và tên (A-Z) hoặc Mã học sinh (tăng dần).
-    *   **AC4.2 - Chức năng tìm kiếm theo từ khóa:**
-        *   **GIVEN** Danh sách học sinh đang hiển thị.
-        *   **WHEN** Tôi nhập từ khóa vào trường tìm kiếm "Họ và tên".
-        *   **THEN** Hệ thống lọc và hiển thị ngay lập tức (hoặc sau khi nhấn nút "Tìm kiếm") chỉ những học sinh có Họ và tên chứa từ khóa đã nhập (không phân biệt chữ hoa, chữ thường).
-        *   **WHEN** Tôi nhập từ khóa vào trường tìm kiếm "Mã học sinh".
-        *   **THEN** Hệ thống lọc và hiển thị ngay lập tức (hoặc sau khi nhấn nút "Tìm kiếm") chỉ những học sinh có Mã học sinh chứa từ khóa đã nhập (không phân biệt chữ hoa, chữ thường).
-        *   **WHEN** Tôi xóa từ khóa tìm kiếm.
-        *   **THEN** Hệ thống hiển thị lại toàn bộ danh sách học sinh hoặc danh sách theo các tiêu chí lọc khác (nếu có).
-    *   **AC4.3 - Chức năng lọc theo tiêu chí:**
-        *   **GIVEN** Danh sách học sinh đang hiển thị.
-        *   **WHEN** Tôi chọn một giá trị từ bộ lọc "Giới tính" (ví dụ: "Nam").
-        *   **THEN** Hệ thống hiển thị chỉ những học sinh phù hợp với giới tính đã chọn.
-        *   **WHEN** Tôi chọn một giá trị từ bộ lọc "Lớp học" (ví dụ: "10A").
-        *   **THEN** Hệ thống hiển thị chỉ những học sinh thuộc lớp học đã chọn.
-        *   **WHEN** Tôi chọn tùy chọn "Tất cả" hoặc bỏ chọn trong bộ lọc.
-        *   **THEN** Hệ thống loại bỏ tiêu chí lọc đó và hiển thị danh sách rộng hơn.
-    *   **AC4.4 - Kết hợp tìm kiếm và lọc:**
-        *   **GIVEN** Tôi đã nhập từ khóa tìm kiếm và/hoặc đã chọn một hoặc nhiều tiêu chí lọc.
-        *   **WHEN** Tôi thay đổi bất kỳ tiêu chí tìm kiếm hoặc lọc nào.
-        *   **THEN** Hệ thống cập nhật danh sách học sinh để hiển thị những học sinh thỏa mãn tất cả các tiêu chí đang được áp dụng.
-    *   **AC4.5 - Hỗ trợ phân trang và sắp xếp:**
-        *   **GIVEN** Danh sách học sinh có số lượng lớn, vượt quá khả năng hiển thị trên một trang.
-        *   **THEN** Hệ thống hỗ trợ phân trang (pagination) để người dùng có thể duyệt qua các trang danh sách.
-        *   **THEN** Hệ thống cung cấp các tùy chọn để sắp xếp danh sách theo Họ và tên hoặc Mã học sinh (tăng dần/giảm dần).
+    *   **Scenario 4.1: Hiển thị danh sách tất cả học sinh**
+        *   **Given** tôi đã đăng nhập vào hệ thống ONENET.
+        *   **When** tôi truy cập chức năng "Quản lý học sinh".
+        *   **Then** hệ thống hiển thị một danh sách tất cả học sinh hiện có.
+        *   **And** mỗi học sinh trong danh sách hiển thị các thông tin cơ bản như: Mã học sinh, Họ và tên, Lớp học, Ngày sinh, Giới tính.
+
+    *   **Scenario 4.2: Tìm kiếm học sinh theo từ khóa**
+        *   **Given** tôi đang xem danh sách học sinh.
+        *   **And** tôi nhập một từ khóa vào ô tìm kiếm (ví dụ: "Nguyễn", "12A", "HS2024005", "090").
+        *   **When** tôi nhấn nút "Tìm kiếm" hoặc hệ thống tự động lọc khi nhập.
+        *   **Then** hệ thống chỉ hiển thị các học sinh có thông tin khớp với từ khóa tìm kiếm (ví dụ: Họ và tên, Mã học sinh, Lớp học, Số điện thoại phụ huynh).
+        *   **And** tìm kiếm không phân biệt chữ hoa, chữ thường.
+
+    *   **Scenario 4.3: Lọc danh sách học sinh theo tiêu chí**
+        *   **Given** tôi đang xem danh sách học sinh.
+        *   **And** tôi chọn một hoặc nhiều tiêu chí lọc (ví dụ: Lớp học "10A1", Giới tính "Nữ").
+        *   **When** tôi áp dụng (hoặc chọn) bộ lọc.
+        *   **Then** hệ thống chỉ hiển thị các học sinh thỏa mãn tất cả các tiêu chí lọc đã chọn.
+        *   **And** các tiêu chí lọc có thể được kết hợp (ví dụ: lọc theo "Lớp" VÀ "Giới tính").
+
+    *   **Scenario 4.4: Xóa/Thiết lập lại bộ lọc và tìm kiếm**
+        *   **Given** tôi đang xem danh sách học sinh đã được tìm kiếm hoặc lọc.
+        *   **When** tôi nhấn nút "Xóa bộ lọc" hoặc "Thiết lập lại".
+        *   **Then** hệ thống hiển thị lại danh sách tất cả học sinh ban đầu, không áp dụng bất kỳ tìm kiếm hoặc bộ lọc nào.
 
 ---
 
-#### **III. YÊU CẦU PHI CHỨC NĂNG (Non-Functional Requirements) - Đã tích hợp**
+### III. Các Yêu cầu Phi Chức năng (Non-functional Requirements)
 
-*   **Validation dữ liệu đầu vào:** Đã được tích hợp chi tiết vào các Acceptance Criteria của User Story "Thêm học sinh mới" và "Sửa thông tin học sinh" (AC1.3, AC1.4, AC2.3).
-*   **Giao diện thân thiện, dễ sử dụng:** Yêu cầu này sẽ được đảm bảo thông qua quá trình thiết kế giao diện người dùng (UI/UX) dựa trên các User Stories và Acceptance Criteria đã định nghĩa. Giao diện sẽ được thiết kế trực quan, có các nút hành động rõ ràng, thông báo phản hồi người dùng dễ hiểu, và quy trình thao tác mạch lạc để đạt được mục tiêu "dễ sử dụng".
+Mặc dù trọng tâm là nghiệp vụ, nhưng các yêu cầu phi chức năng cũng rất quan trọng.
+
+*   **ONENET-NFR-001: Giao diện thân thiện, dễ sử dụng (Usability)**
+    *   **Description:** Giao diện người dùng phải trực quan, dễ hiểu và dễ điều hướng cho người dùng là Giáo vụ. Các thao tác thêm, sửa, xóa, xem phải rõ ràng, có hướng dẫn cần thiết và phản hồi rõ ràng từ hệ thống.
+    *   **Acceptance Criteria:**
+        *   Người dùng mới có thể thực hiện các thao tác cơ bản (thêm, xem, sửa) mà không cần hướng dẫn chi tiết sau một thời gian ngắn làm quen (dưới 5 phút cho mỗi chức năng).
+        *   Các nút chức năng phải được đặt ở vị trí hợp lý, dễ nhìn thấy.
+        *   Màu sắc và bố cục phải hài hòa, không gây mỏi mắt khi sử dụng lâu.
+        *   Phản hồi của hệ thống (thông báo lỗi, thông báo thành công) phải rõ ràng, dễ hiểu.
 
 ---
 
-Hy vọng tài liệu này cung cấp cái nhìn rõ ràng và đầy đủ về các yêu cầu nghiệp vụ cho tính năng quản lý thông tin cá nhân học sinh. Tôi sẵn sàng thảo luận và làm rõ thêm bất kỳ điểm nào khi cần.
+### IV. Các Quy tắc Nghiệp vụ Chung (General Business Rules)
+
+Các quy tắc này áp dụng cho nhiều User Story và đảm bảo tính toàn vẹn của dữ liệu.
+
+*   **BR-HS-001: Tính duy nhất của Mã học sinh**
+    *   Mỗi học sinh trong hệ thống phải có một Mã học sinh duy nhất. Mã học sinh không thể trùng lặp.
+*   **BR-HS-002: Các trường bắt buộc**
+    *   Họ và tên, Ngày sinh, Giới tính, Mã học sinh, Lớp học là các trường thông tin bắt buộc và không được phép để trống khi thêm mới hoặc cập nhật.
+*   **BR-HS-003: Định dạng ngày sinh**
+    *   Ngày sinh phải là một ngày hợp lệ và không được là ngày trong tương lai. Định dạng ngày tháng năm phải thống nhất (ví dụ: DD/MM/YYYY).
+*   **BR-HS-004: Định dạng số điện thoại**
+    *   Số điện thoại phụ huynh phải có định dạng số hợp lệ (ví dụ: chỉ chứa chữ số, độ dài theo chuẩn điện thoại Việt Nam).
+*   **BR-HS-005: Tính toàn vẹn dữ liệu khi xóa**
+    *   Khi xóa một học sinh, tất cả dữ liệu liên quan trực tiếp đến học sinh đó (ví dụ: thông tin cá nhân) phải được xóa bỏ. Cần xem xét tác động nếu học sinh có dữ liệu liên quan đến các phân hệ khác (ví dụ: điểm số, chuyên cần). *Lưu ý: Đối với yêu cầu ban đầu chỉ là "xóa thông tin học sinh", chúng ta sẽ hiểu là xóa dữ liệu cá nhân học sinh. Nếu có ràng buộc nghiệp vụ phức tạp hơn (VD: không cho xóa nếu học sinh đã có điểm), sẽ cần một User Story hoặc AC riêng.*
+
+---
+
+Tôi hy vọng phân tích này đã làm rõ các yêu cầu nghiệp vụ và cung cấp một bộ User Stories và Acceptance Criteria đầy đủ, sẵn sàng cho bước phát triển tiếp theo. Nếu có bất kỳ điểm nào cần làm rõ hoặc bổ sung, vui lòng phản hồi.
