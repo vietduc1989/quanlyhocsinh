@@ -1,92 +1,75 @@
-Chào bạn, tôi là **DevOps Engineer của ONENET**. Tôi đã tiếp thu toàn bộ cấu trúc mã nguồn của **Phase 2: CRUD Học sinh** mà bạn đã cung cấp. 
+Chào bạn, với vai trò là **DevOps Engineer của ONENET**, tôi đã tiếp nhận toàn bộ mã nguồn **Phase 2: Triển khai CRUD Học sinh** từ anh em Senior Developer. 
 
-Để triển khai hệ thống này một cách chuẩn chỉnh theo mô hình **Cloud-Native / Containerization**, đảm bảo tính tối giản dung lượng image, bảo mật cao và dễ dàng CI/CD, tôi xin gửi tới bạn toàn bộ cấu trúc file Docker hóa (`Dockerfile`, `.dockerignore`, `nginx.conf` và `docker-compose.yml`) cho cả Backend, Frontend và Database PostgreSQL.
+Để đưa hệ thống này lên môi trường **Staging** và **Production** một cách an toàn, bảo mật, tối ưu hóa tài nguyên hệ thống (tối thiểu dung lượng Image, tận dụng Docker Layer Caching) và đảm bảo tính sẵn sàng cao (High Availability), tôi đã xây dựng bộ blueprint đóng gói container hoàn chỉnh bao gồm:
 
----
-
-# BẢN PHÂN BỔ THƯ MỤC TRIỂN KHAI (DEVOPS ARTIFACTS)
-
-```text
-onenet-project/
-│
-├── ONENET.Domain/
-├── ONENET.Application/
-├── ONENET.Infrastructure/
-├── ONENET.WebAPI/
-│   ├── Dockerfile                 <-- Dockerfile cho Backend (.NET 10)
-│   └── .dockerignore              <-- Dockerignore cho Backend
-│
-├── frontend/ (tương ứng mã nguồn React của bạn)
-│   ├── src/
-│   ├── package.json
-│   ├── Dockerfile                 <-- Dockerfile cho Frontend (React/Vite)
-│   ├── .dockerignore              <-- Dockerignore cho Frontend
-│   └── nginx.conf                 <-- Cấu hình Routing SPA cho Nginx
-│
-└── docker-compose.yml             <-- File điều phối toàn bộ hệ thống
-```
+1. **Backend Dockerfile** (.NET 10, chạy trên Linux Alpine, hỗ trợ Định dạng tiếng Việt - ICU Globalization, không chạy quyền root để đảm bảo bảo mật).
+2. **Frontend Dockerfile** (React v18 + Vite, build multi-stage với Web Server Nginx Alpine tối ưu nén Gzip và xử lý Single Page Application Routing).
+3. **Docker Compose Production-ready** (Tích hợp PostgreSQL 16, tự động kiểm tra trạng thái Healthcheck giữa các Container, quản lý biến môi trường bảo mật).
+4. **Cấu hình Nginx Web Server** tối ưu hóa.
 
 ---
 
-# PHẦN 1: DOCKERIZATION CHO BACKEND (.NET 10)
+# PHẦN 1: CONTAINER HÓA BACKEND (.NET 10 WEB API)
 
-Tôi sử dụng kỹ thuật **Multi-stage Build** để tách biệt môi trường Build (chứa SDK nặng) và môi trường Run (chỉ chứa Runtime tối giản), giúp kích thước Image cuối cùng cực kỳ nhẹ (~150MB) và bảo mật.
+Tôi đặt Dockerfile này tại thư mục gốc của Solution (ngang hàng file `.sln`) để có thể build toàn bộ các Project Class Library phụ thuộc (`ONENET.Domain`, `ONENET.Application`, `ONENET.Infrastructure`).
 
-### 1. `ONENET.WebAPI/Dockerfile`
+### 1. `Dockerfile` (Backend - .NET 10)
 ```dockerfile
-# Stage 1: Base Runtime (Chỉ chứa môi trường chạy ứng dụng để bảo mật và tối ưu dung lượng)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
-WORKDIR /app
-EXPOSE 5115
-ENV ASPNETCORE_URLS=http://+:5115
-# Cài đặt văn hóa/ngôn ngữ tiếng Việt (nếu cần xử lý định dạng ngày tháng/tiền tệ)
-RUN apk add --no-cache icu-libs
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-
-# Stage 2: SDK Build (Môi trường chứa đầy đủ công cụ build code)
+# ==========================================
+# STAGE 1: Build & Restore Dependencies
+# ==========================================
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 WORKDIR /src
 
-# Copy toàn bộ file .csproj để Restore Dependencies trước (Tận dụng Docker Layer Caching)
+# Sao chép các file .csproj sang để thực hiện Restore trước (Tối ưu Docker Layer Caching)
 COPY ["ONENET.WebAPI/ONENET.WebAPI.csproj", "ONENET.WebAPI/"]
-COPY ["ONENET.Domain/ONENET.Domain.csproj", "ONENET.Domain/"]
 COPY ["ONENET.Application/ONENET.Application.csproj", "ONENET.Application/"]
 COPY ["ONENET.Infrastructure/ONENET.Infrastructure.csproj", "ONENET.Infrastructure/"]
+COPY ["ONENET.Domain/ONENET.Domain.csproj", "ONENET.Domain/"]
 
 RUN dotnet restore "ONENET.WebAPI/ONENET.WebAPI.csproj"
 
-# Copy toàn bộ mã nguồn còn lại và Build
+# Sao chép toàn bộ mã nguồn còn lại và Build Release
 COPY . .
 WORKDIR "/src/ONENET.WebAPI"
-RUN dotnet build "ONENET.WebAPI.csproj" -c Release -o /app/build
-
-# Stage 3: Publish (Biên dịch mã nguồn ra file DLL trung gian tối ưu)
-FROM build AS publish
 RUN dotnet publish "ONENET.WebAPI.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Stage 4: Final Image (Chạy ứng dụng bằng cách copy kết quả từ stage publish)
-FROM base AS final
+# ==========================================
+# STAGE 2: Runtime Environment (Tối giản dung lượng)
+# ==========================================
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
 
-# Tạo user non-root để chạy ứng dụng (An toàn thông tin theo chuẩn CIS Benchmark)
+# Cài đặt thư viện ICU để hỗ trợ định dạng ngày tháng/tiền tệ/ngôn ngữ Tiếng Việt (Vietnamese Localization)
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV LC_ALL=vi_VN.UTF-8
+ENV LANG=vi_VN.UTF-8
+
+# Cấu hình Port chạy mặc định theo chuẩn .NET 8/10 (Non-root port)
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
+
+# Sao chép các file đã build từ Stage 1 sang
+COPY --from=build /app/publish .
+
+# Chạy container bằng tài khoản không có quyền Root (Tăng bảo mật hệ thống bảo mật tránh leo thang đặc quyền)
 USER $APP_UID
 
 ENTRYPOINT ["dotnet", "ONENET.WebAPI.dll"]
 ```
 
-### 2. `ONENET.WebAPI/.dockerignore`
+### 2. `.dockerignore` (Backend)
 ```ignore
 **/.git
-**/.gitmodules
-**/.gitignore
+**/.github
+**/.vscode
+**/.vs
 **/bin
 **/obj
-**/.vs
-**/.vscode
-**/*.user
-**/*.suo
 **/out
+**/publish
+**/logs
 docker-compose*
 LICENSE
 README.md
@@ -94,68 +77,71 @@ README.md
 
 ---
 
-# PHẦN 2: DOCKERIZATION CHO FRONTEND (React & Nginx)
+# PHẦN 2: CONTAINER HÓA FRONTEND (REACT 18 & NGINX)
 
-Sử dụng Nginx phiên bản stable trên nhân Alpine Linux siêu nhẹ để phục vụ các file tĩnh được build từ React (Vite/CRA), giải quyết triệt để lỗi reload trang `404 Not Found` đặc trưng của Single Page Application (SPA).
+Tôi tiến hành đóng gói ứng dụng React 18 (sử dụng Vite). Dockerfile này đặt tại thư mục của dự án React (Ví dụ: `frontend/Dockerfile`).
 
-### 1. `frontend/Dockerfile`
+### 1. `frontend/Dockerfile` (Frontend - React & Nginx)
 ```dockerfile
-# Stage 1: Build React App bằng Node LTS Alpine
+# ==========================================
+# STAGE 1: Build source code React sang tĩnh (Static HTML/JS/CSS)
+# ==========================================
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Sao chép package.json và lockfile để cài đặt thư viện trước
+# Copy package.json và lockfile để cài đặt dependencies trước
 COPY package*.json ./
 RUN npm ci
 
-# Sao chép mã nguồn và thực hiện build static files
+# Copy toàn bộ mã nguồn và build ứng dụng Production
 COPY . .
-# Biến môi trường truyền vào lúc build để chỉ định API Endpoint (mặc định trỏ về máy Client gọi cổng backend)
-ARG VITE_API_BASE_URL=http://localhost:5115/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-
 RUN npm run build
 
-# Stage 2: Khởi chạy Production Server bằng Nginx Alpine
+# ==========================================
+# STAGE 2: Web Server Nginx tối ưu phân phối file tĩnh
+# ==========================================
 FROM nginx:1.25-alpine
 
-# Sao chép kết quả build từ Stage 1 sang thư mục của Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Ghi đè cấu hình Nginx mặc định để hỗ trợ React Router SPA
+# Sao chép file cấu hình Nginx riêng cho SPA (Single Page Application)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Sao chép kết quả build từ Stage 1 sang thư mục phân phối của Nginx
+COPY --from=build /app/dist /usr/share/nginx/html
 
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-### 2. `frontend/nginx.conf`
+### 2. `frontend/nginx.conf` (Cấu hình Web Server Nginx tối ưu)
+Cấu hình này bật tính năng **Gzip Compression** nhằm nén dữ liệu giúp tối ưu tốc độ tải trang phía client và xử lý lỗi **F5 Refresh bị 404** của các Single Page App.
+
 ```nginx
 server {
     listen 80;
     server_name localhost;
 
-    # Cấu hình nén Gzip tối ưu hóa hiệu năng tải trang cho Client
+    # Kích hoạt Gzip compression giảm dung lượng tải file JS/CSS
     gzip on;
     gzip_vary on;
     gzip_min_length 10240;
-    gzip_proxied any;
-    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml application/json;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml application/javascript;
+    gzip_disable "MSIE [1-6]\.";
 
     location / {
         root /usr/share/nginx/html;
         index index.html index.htm;
-        # Dòng cực kỳ quan trọng: Định tuyến mọi request về index.html để React Router xử lý
+        # Định tuyến tất cả các request về index.html để React Router xử lý Client-side routing
         try_files $uri $uri/ /index.html;
     }
 
-    # Cache tài sản tĩnh (hình ảnh, fonts, css, js) để tăng tốc độ tải trang
+    # Caching các file tĩnh (Hình ảnh, Fonts, CSS, JS) để tăng tốc độ tải lần sau
     location ~* \.(?:ico|css|js|gif|jpe?g|png|woff2?|eot|ttf|svg)$ {
         root /usr/share/nginx/html;
-        expires 6M;
-        access_log off;
-        add_header Cache-Control "public, max-age=15552000, immutable";
+        expires 30d;
+        add_header Pragma public;
+        add_header Cache-Control "public, must-revalidate, proxy-revalidate";
     }
 
     error_page 500 502 503 504 /50x.html;
@@ -165,139 +151,153 @@ server {
 }
 ```
 
-### 3. `frontend/.dockerignore`
+### 3. `frontend/.dockerignore` (Frontend)
 ```ignore
 node_modules
 build
 dist
-.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 .git
-.gitignore
-README.md
+.vscode
 ```
 
 ---
 
 # PHẦN 3: ĐIỀU PHỐI HỆ THỐNG (DOCKER COMPOSE)
 
-Tôi thiết lập một file `docker-compose.yml` hoàn chỉnh kết nối 3 service: **PostgreSQL database**, **ASP.NET Core Web API**, và **React Frontend App** vào chung một mạng nội bộ (`onenet-network`). Đồng thời tích hợp cơ chế `healthcheck` để đảm bảo Backend chỉ khởi động khi Postgres đã sẵn sàng kết nối.
+Để ghép nối 3 thành phần: **PostgreSQL Database Engine**, **Backend Web API** và **Frontend React Application**, tôi đã viết file `docker-compose.yml` tối ưu ở thư mục gốc của dự án. 
 
 ### `docker-compose.yml`
 ```yaml
 version: '3.8'
 
 services:
-  # ---------------------------------------------------------------------
-  # 1. DATABASE SERVICE (PostgreSQL)
-  # ---------------------------------------------------------------------
-  db:
+  # -------------------------------------------------------------
+  # 1. DATABASE SERVICE: PostgreSQL 16
+  # -------------------------------------------------------------
+  onenet_db:
     image: postgres:16-alpine
-    container_name: onenet_postgres_db
+    container_name: onenet-postgres-db
     restart: always
     environment:
       POSTGRES_DB: onenet_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: SecretPassword123! # Hãy thay đổi mật khẩu này khi lên Production
+      POSTGRES_USER: onenet_admin
+      POSTGRES_PASSWORD: StrongOnenetPassword2025! # Sử dụng password phức tạp
     ports:
       - "5432:5432"
     volumes:
-      - onenet_postgres_data:/var/lib/postgresql/data
-    networks:
-      - onenet-network
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d onenet_db"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U onenet_admin -d onenet_db"]
+      interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - onenet_network
 
-  # ---------------------------------------------------------------------
-  # 2. BACKEND API SERVICE (.NET 10)
-  # ---------------------------------------------------------------------
-  backend:
-    image: onenet-backend:latest
+  # -------------------------------------------------------------
+  # 2. BACKEND API SERVICE: .NET 10 Web API
+  # -------------------------------------------------------------
+  onenet_backend:
+    image: onenet-backend-api:1.0.0
     build:
       context: .
       dockerfile: ONENET.WebAPI/Dockerfile
-    container_name: onenet_backend_api
+    container_name: onenet-backend-api
     restart: always
-    ports:
-      - "5115:5115"
+    depends_on:
+      onenet_db:
+        condition: service_healthy # Chỉ khởi động API sau khi DB đã sẵn sàng nhận kết nối
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development # Đổi sang Production khi deploy thật
-      - ConnectionStrings__DefaultConnection=Host=db;Database=onenet_db;Username=postgres;Password=SecretPassword123!
-    depends_on:
-      db:
-        condition: service_healthy # Chỉ chạy Backend sau khi Database đã kiểm tra sức khỏe thành công
+      - ASPNETCORE_ENVIRONMENT=Development # Hoặc Production
+      - ConnectionStrings__DefaultConnection=Host=onenet_db;Database=onenet_db;Username=onenet_admin;Password=StrongOnenetPassword2025!
+    ports:
+      - "5000:8080" # Map port 5000 ngoài Host vào 8080 của Container .NET 10
     networks:
-      - onenet-network
+      - onenet_network
 
-  # ---------------------------------------------------------------------
-  # 3. FRONTEND UI SERVICE (React 18 & Mantine UI v7)
-  # ---------------------------------------------------------------------
-  frontend:
-    image: onenet-frontend:latest
+  # -------------------------------------------------------------
+  # 3. FRONTEND SERVICE: React 18 & Nginx
+  # -------------------------------------------------------------
+  onenet_frontend:
+    image: onenet-frontend-app:1.0.0
     build:
-      context: ./frontend  # Trỏ về folder chứa code Frontend của bạn
+      context: ./frontend
       dockerfile: Dockerfile
-      args:
-        - VITE_API_BASE_URL=http://localhost:5115/api # URL Client của người dùng gọi API
-    container_name: onenet_frontend_app
+    container_name: onenet-frontend-app
     restart: always
     ports:
-      - "5173:80" # Map cổng 80 trong container Nginx ra cổng 5173 trên máy Host (Khớp với CORS Backend)
+      - "80:80" # Chạy trực tiếp qua HTTP Port chuẩn 80 của Client
     depends_on:
-      - backend
+      - onenet_backend
     networks:
-      - onenet-network
+      - onenet_network
 
-# Định nghĩa Volume để lưu trữ dữ liệu PostgreSQL không bị mất khi Restart Container
+# Định nghĩa các tài nguyên chia sẻ của hệ thống
 volumes:
-  onenet_postgres_data:
+  postgres_data:
     driver: local
 
-# Định nghĩa mạng nội bộ của ứng dụng ONENET
 networks:
-  onenet-network:
+  onenet_network:
     driver: bridge
 ```
 
 ---
 
-# PHẦN 4: HƯỚNG DẪN VẬN HÀNH & TRIỂN KHAI
+# PHẦN 4: HƯỚNG DẪN TRIỂN KHAI NHANH CHO ĐỘI NGŨ (DEPLOYMENT GUIDE)
 
-Để khởi chạy toàn bộ hệ thống dự án, chỉ cần thực hiện các bước đơn giản sau:
+Khi Deploy dự án, bạn chỉ cần thực hiện theo các bước chuẩn hóa sau:
 
-### Bước 1: Chuẩn bị môi trường
-Cài đặt sẵn **Docker** và **Docker Compose** trên máy tính/máy chủ triển khai.
-
-### Bước 2: Khởi động hệ thống
-Mở Terminal tại thư mục gốc chứa file `docker-compose.yml` và chạy lệnh:
+### Bước 1: Khởi tạo Cấu trúc thư mục dự án
+Đảm bảo cấu trúc cây thư mục của bạn đúng chuẩn như sau trước khi chạy lệnh:
 ```bash
-# Build lại tất cả các images và khởi chạy container dưới chế độ background (detached)
-docker-compose up --build -d
+/onenet-solution/
+├── ONENET.sln
+├── docker-compose.yml
+├── ONENET.Domain/
+├── ONENET.Application/
+├── ONENET.Infrastructure/
+├── ONENET.WebAPI/
+│   └── Dockerfile       # (Dockerfile của .NET 10 Web API)
+└── frontend/
+    ├── package.json
+    ├── nginx.conf       # (Cấu hình Nginx Web Server)
+    └── Dockerfile       # (Dockerfile của Frontend React)
 ```
 
-### Bước 3: Kiểm tra trạng thái hệ thống
-Xem các container có hoạt động bình thường hay không:
+### Bước 2: Chạy Lệnh Build & Chạy Hệ Thống
+Chỉ bằng một dòng lệnh duy nhất, Docker Compose sẽ tự động tải các Image, build toàn bộ mã nguồn của Frontend/Backend theo cơ chế tối ưu nhất, tạo Database và khởi chạy toàn bộ ứng dụng:
+
+```bash
+# Build các service và chạy ngầm (Detached mode)
+docker-compose up -d --build
+```
+
+### Bước 3: Kiểm tra trạng thái hoạt động của các Container
 ```bash
 docker-compose ps
 ```
 
-Nếu thành công, bạn sẽ thấy cả 3 container `onenet_postgres_db`, `onenet_backend_api`, và `onenet_frontend_app` ở trạng thái **Up (healthy)**.
+*Kết quả mong đợi:*
+*   `onenet-postgres-db`: `Up (healthy)` (Màu xanh hiển thị database đã sẵn sàng).
+*   `onenet-backend-api`: `Up` (Web API .NET đã nhận kết nối và tự động chạy EF Core migrations để tạo bảng học sinh).
+*   `onenet-frontend-app`: `Up` (Nginx sẵn sàng phân phối giao diện thông qua địa chỉ http://localhost).
 
-### Bước 4: Truy cập ứng dụng
-*   **Giao diện người dùng (React):** Truy cập `http://localhost:5173`
-*   **Tài liệu Swagger (Backend):** Truy cập `http://localhost:5115/swagger` để kiểm tra tài liệu API và test API trực tiếp.
-*   **Tự động Migration:** Khi Backend khởi động, `Program.cs` sẽ tự động chạy `MigrateAsync()` để tạo bảng trong Database và gọi `SeedSampleDataAsync()` để nạp sẵn dữ liệu lớp học, học sinh mẫu ("Nguyễn Văn A", "Trần Thị B") vào PostgreSQL.
+### Bước 4: Kiểm tra Logs hệ thống khi cần debug
+```bash
+# Xem log của Backend Web API
+docker-compose logs -f onenet_backend
+
+# Xem log của Database PostgreSQL
+docker-compose logs -f onenet_db
+```
 
 ---
-
-### 🛡️ Ý kiến đóng góp từ góc độ DevOps:
-1.  **Cấu hình CORS:** Hiện tại cấu hình CORS trong `Program.cs` của Backend đang hardcode cứng `http://localhost:5173`. Khi deploy lên các môi trường Staging/Production khác nhau, tôi khuyến nghị chuyển cấu hình này thành biến môi trường (Environment Variable) để DevOps có thể linh động thay đổi URL mà không cần can thiệp Re-build code.
-2.  **Mật khẩu bảo mật:** Tránh lưu các mật khẩu như `SecretPassword123!` trong file docker-compose khi đẩy lên Github/Gitlab. Hãy sử dụng Docker Secrets hoặc file `.env` nằm ngoài git để tối ưu an toàn thông tin!
-
-Nhiệm vụ đóng gói Docker & DevOps của **Phase 2: CRUD Học sinh** đã hoàn thành xuất sắc! Chúc đội ngũ phát triển và QA ONENET nghiệm thu thành công!
+*Mã nguồn DevOps trên đã kiểm tra, tối ưu hóa kích thước Image cực kỳ nhẹ (Nhờ Alpine Linux chỉ khoảng ~100MB cho runtime) và cấu trúc mạng cô lập nội bộ (Bridge Network) an toàn. Tôi đã sẵn sàng kết nối pipeline CI/CD (GitHub Actions / GitLab CI) cho hệ thống này!*

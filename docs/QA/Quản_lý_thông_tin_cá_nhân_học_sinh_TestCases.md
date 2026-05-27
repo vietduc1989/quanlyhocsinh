@@ -1,92 +1,293 @@
-# TÀI LIỆU KỊCH BẢN KIỂM THỬ (TEST CASES DOCUMENT)
+# TÀI LIỆU KỊCH BẢN KIỂM THỬ (TEST CASES SPECIFICATION)
 
-*   **Hệ thống:** Hệ thống Quản lý Đào tạo ONENET
-*   **Phân hệ:** Quản lý Học sinh (Student Management)
-*   **Giai đoạn:** Phase 2 - Triển khai CRUD Học sinh
-*   **Tác giả:** Đội ngũ QA - ONENET
-*   **Phiên bản:** 1.0
-*   **Ngày tạo:** [Ngày hiện tại]
-*   **Tài liệu tham chiếu:** BRD Phase 2, Mã nguồn Backend (.NET 10), Mã nguồn Frontend (React/Mantine v7)
-
----
-
-## I. MÔI TRƯỜNG VÀ THÔNG TIN KIỂM THỬ
-
-*   **Backend:** ASP.NET Core 10 Web API, Entity Framework Core, PostgreSQL 17 (múi giờ UTC mặc định cho dữ liệu lịch).
-*   **Frontend:** React 18, Mantine UI v7, TanStack Query v5 (React Query), Axios.
-*   **Bộ dữ liệu mẫu (Seeded Data):**
-    *   Lớp học: `Lớp 10A` (Guid `classId_1`), `Lớp 11B` (Guid `classId_2`), `Lớp 12C` (Guid `classId_3`).
-    *   Học sinh mẫu đã tồn tại:
-        *   Mã: `HS0001` | Tên: `Nguyễn Văn A` | Ngày sinh: `12/05/2008` | Lớp: `Lớp 10A`.
-        *   Mã: `HS0002` | Tên: `Trần Thị B` | Ngày sinh: `20/09/2007` | Lớp: `Lớp 11B`.
+*   **Hệ thống:** ONENET - Phân hệ Quản lý Giáo dục
+*   **Module:** Quản lý Học sinh (Student Management) - Phase 2
+*   **Tác giả:** Đội ngũ QA ONENET (Senior QA Engineer)
+*   **Phiên bản:** 1.0.0
+*   **Ngày tạo:** 24/02/2025
+*   **Môi trường áp dụng:** Staging / UAT (Backend .NET 10 Web API, PostgreSQL DB, Frontend React 18 / Mantine UI v7)
 
 ---
 
-## II. DANH SÁCH KỊCH BẢN KIỂM THỬ CHI TIẾT
+## I. THÔNG TIN CHUNG & QUY ƯỚC
 
-### 1. Nhóm Chức năng: Thêm mới Học sinh (US-HS-001)
+### 1. Mức độ ưu tiên (Priority - P)
+*   **P0 (Critical):** Các chức năng cốt lõi lỗi khiến luồng nghiệp vụ bị tắc nghẽn hoàn toàn (ví dụ: Không thể thêm học sinh, lỗi crash trang, lỗi API 500 khi lưu dữ liệu hợp lệ).
+*   **P1 (High):** Lỗi kiểm soát nghiệp vụ, sai sót dữ liệu nghiêm trọng hoặc sai lệch logic validation (ví dụ: Trùng mã học sinh vẫn lưu được, số điện thoại nhập chữ vẫn hợp lệ).
+*   **P2 (Medium):** Các lỗi về hiển thị, giao diện không đồng bộ, lỗi phân trang nhẹ, thông báo lỗi thiếu thân thiện.
+*   **P3 (Low):** Lỗi thẩm mỹ, căn lề, font chữ, gợi ý UI/UX chưa tối ưu.
 
-| Mã TC | Tên Kịch Bản Kiểm Thử | Tiền Điều Kiện | Các Bước Thực Hiện | Dữ liệu Đầu Vào | Kết Quả Mong Đợi (Expected Result) | Loại Test | Độ Ưu Tiên |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC_STU_CRT_001** | Thêm mới học sinh thành công với đầy đủ thông tin hợp lệ | Người dùng đã đăng nhập và truy cập màn hình Danh sách học sinh. | 1. Nhấn nút **"Thêm mới Học sinh"**.<br>2. Nhập đầy đủ, hợp lệ tất cả các trường thông tin bắt buộc và tự chọn.<br>3. Nhấn nút **"Lưu lại"**. | • Mã HS: `HS0003`<br>• Họ tên: `Phạm Văn C`<br>• Ngày sinh: `15/08/2008`<br>• Giới tính: `Nam`<br>• Lớp học: `Lớp 10A`<br>• Email: `vanc@onenet.edu.vn`<br• SĐT: `0961234567`<br>• Tên PH: `Phạm Văn Bố`<br>• SĐT PH: `0911223344`<br>• Địa chỉ: `Hải Phòng` | • Form đóng lại.<br>• Hệ thống hiển thị thông báo thành công: *"Thêm mới học sinh thành công."* màu xanh lá.<br>• Học sinh mới hiển thị đúng thông tin ở dòng đầu/danh sách học sinh.<br>• Database lưu đúng thông tin với trường `IsDeleted = false` và `Status = 1 (Active)`. | Positive | High |
-| **TC_STU_CRT_002** | Thêm mới học sinh thất bại do bỏ trống các trường bắt buộc | Màn hình popup **"Thêm mới Học sinh"** đang mở. | 1. Bỏ trống tất cả các trường.<br>2. Nhấn nút **"Lưu lại"**. | Không nhập gì. | • Hệ thống chặn submit.<br>• Hiển thị thông báo lỗi Validation màu đỏ ngay dưới các trường bắt buộc:<br>  - Mã HS: *"Mã học sinh không được để trống"*<br>  - Họ tên: *"Tên phải chứa ít nhất 2 ký tự"*<br>  - Ngày sinh: *"Vui lòng chọn ngày sinh"*<br>  - Lớp học: *"Vui lòng chọn lớp học"*. | Negative | High |
-| **TC_STU_CRT_003** | Thêm mới học sinh thất bại do trùng Mã Học sinh | Màn hình popup **"Thêm mới Học sinh"** đang mở.<br>Mã `HS0001` đã tồn tại. | 1. Nhập Mã HS trùng với mã đã có.<br>2. Nhập đầy đủ thông tin hợp lệ khác.<br>3. Nhấn nút **"Lưu lại"**. | • Mã HS: `HS0001` *(Trùng)*<br>• Họ tên: `Lê Hoàng Long`<br>• Ngày sinh: `10/10/2008`<br>• Lớp: `Lớp 10A` | • Backend trả về mã lỗi `400 Bad Request`. <br>• Frontend hiển thị Popup Notification góc trên bên phải màu đỏ với nội dung: *"Mã học sinh đã tồn tại trong hệ thống."*<br>• Popup Thêm mới không bị đóng, dữ liệu cũ được giữ nguyên để sửa đổi. | Negative | High |
-| **TC_STU_CRT_004** | Thêm mới học sinh thất bại do độ dài ký tự vượt biên giới hạn | Màn hình popup **"Thêm mới Học sinh"** đang mở. | 1. Nhập các trường vượt giới hạn ký tự cho phép.<br>2. Nhấn nút **"Lưu lại"**. | • Mã HS: `HS00000000000000000001` *(21 ký tự, giới hạn là 20)*<br>• Họ tên: Chuỗi ký tự ngẫu nhiên có độ dài 101 ký tự. | • Hệ thống chặn không cho submit hoặc Backend trả về lỗi lỗi kiểm thực (FluentValidation):<br>  - *"Mã học sinh không quá 20 ký tự."*<br>  - *"Họ và tên không quá 100 ký tự."* | Boundary | Medium |
-| **TC_STU_CRT_005** | Kiểm tra ràng buộc Ngày sinh không được ở hiện tại hoặc tương lai | Màn hình popup **"Thêm mới Học sinh"** đang mở. | 1. Chọn ngày sinh là ngày hiện tại hoặc tương lai.<br>2. Nhấn nút **"Lưu lại"**. | • Ngày sinh: Ngày hiện tại hoặc Ngày mai. | • Trình chọn ngày (`DateInput`) của Mantine giới hạn không cho chọn (`maxDate={new Date()}`).<br>• Nếu bypass bằng cách nhập text: Hiển thị lỗi dưới trường nhập: *"Ngày sinh phải ở trong quá khứ."* | Boundary | High |
-| **TC_STU_CRT_006** | Thêm mới học sinh thất bại do nhập sai định dạng Email | Màn hình popup **"Thêm mới Học sinh"** đang mở. | 1. Nhập Email sai định dạng chuẩn.<br>2. Nhấn nút **"Lưu lại"**. | • Email: `nguyenvana_onenet.edu.vn` (thiếu ký tự `@`) | • Hệ thống hiển thị thông báo lỗi màu đỏ ngay dưới ô Email: *"Email không hợp lệ"*. • Dữ liệu không được gửi lên backend. | Boundary | High |
-| **TC_STU_CRT_007** | Thao tác hủy bỏ việc thêm mới học sinh | Màn hình popup **"Thêm mới Học sinh"** đang mở và đã nhập một số thông tin. | 1. Nhấn nút **"Hủy"** hoặc biểu tượng **"X"** để đóng modal. | Đã nhập thông tin nháp. | • Popup đóng lại.<br>• Không có học sinh mới nào được thêm vào danh sách.<br>• Khi mở lại popup, các ô nhập liệu được reset về trống rỗng (`form.reset()`). | Positive | Low |
-
----
-
-### 2. Nhóm Chức năng: Xem danh sách, Tìm kiếm và Lọc Học sinh (US-HS-002)
-
-| Mã TC | Tên Kịch Bản Kiểm Thử | Tiền Điều Kiện | Các Bước Thực Hiện | Dữ liệu Đầu Vào | Kết Quả Mong Đợi (Expected Result) | Loại Test | Độ Ưu Tiên |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC_STU_RD_001** | Xem danh sách học sinh mặc định | Hệ thống đã có sẵn danh sách học sinh mẫu trong database. | Truy cập trang Quản lý Học sinh. | Không có. | • Hiển thị danh sách học sinh dưới dạng bảng (Table) với các cột đúng thiết kế.<br>• Hiển thị đúng dữ liệu mặc định ban đầu (`HS0001` - Nguyễn Văn A, `HS0002` - Trần Thị B).<br>• Các trạng thái hiển thị đúng màu Badge định nghĩa (`Active` hiển thị màu xanh lá). | Positive | High |
-| **TC_STU_RD_002** | Tìm kiếm học sinh theo Họ và tên | Trang Quản lý học sinh đang mở. | Nhập một phần họ tên của học sinh mẫu vào ô tìm kiếm. | Từ khóa: `Văn A` hoặc `văn a` (Test không phân biệt chữ hoa/thường). | • Danh sách lập tức tự động filter (hoặc hiển thị sau khi debounce) chỉ còn học sinh `Nguyễn Văn A`. | Positive | High |
-| **TC_STU_RD_003** | Tìm kiếm học sinh theo Mã học sinh | Trang Quản lý học sinh đang mở. | Nhập mã học sinh mẫu vào ô tìm kiếm. | Từ khóa: `HS0002`. | • Danh sách chỉ hiển thị học sinh `Trần Thị B`. | Positive | High |
-| **TC_STU_RD_004** | Tìm kiếm không có kết quả | Trang Quản lý học sinh đang mở. | Nhập từ khóa tìm kiếm không tồn tại trong DB. | Từ khóa: `Không Có Ai`. | • Danh sách trống rỗng.<br>• Không xảy ra lỗi trắng màn hình.<br>• Hệ thống không bị treo. | Negative | Medium |
-| **TC_STU_RD_005** | Lọc học sinh theo Lớp học | Trang Quản lý học sinh đang mở. | Chọn một lớp học cụ thể từ combobox **"Lọc theo lớp học"**. | Chọn: `Lớp 11B`. | • Danh sách chỉ hiển thị học sinh thuộc lớp `Lớp 11B` (ví dụ: `Trần Thị B`). | Positive | High |
-| **TC_STU_RD_006** | Kết hợp tìm kiếm theo tên và lọc theo lớp học | Trang Quản lý học sinh đang mở. | 1. Nhập từ khóa tìm kiếm.<br>2. Chọn bộ lọc Lớp học. | Từ khóa: `Nguyễn Văn A` + Chọn lớp: `Lớp 11B`. | • Danh sách trống rỗng (vì học sinh Nguyễn Văn A thuộc lớp `Lớp 10A`, không phải `11B`). | Positive | Medium |
-| **TC_STU_RD_007** | Phân trang danh sách học sinh | Database có nhiều hơn 10 học sinh hoạt động. | 1. Cuộn xuống cuối bảng.<br>2. Quan sát thanh phân trang.<br>3. Nhấn chuyển sang trang 2. | Không có. | • Thanh phân trang hiển thị đúng tổng số trang (`TotalPages`).<br>• Khi chuyển sang trang 2, danh sách hiển thị đúng tập học sinh từ thứ 11 trở đi.<br>• UI chuyển hướng mượt mà, không giật lag. | Positive | High |
+### 2. Dữ liệu Test mẫu định sẵn (Seed Data)
+Để phục vụ việc kiểm thử tích hợp chính xác, dữ liệu mẫu dưới đây được giả định đã có sẵn trong database (được cấu hình qua `ApplicationDbContext`):
+*   **Lớp học 1:** ID: `a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1` | Tên lớp: `Lớp 10A` | Niên khóa: `2025-2026`
+*   **Lớp học 2:** ID: `b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2` | Tên lớp: `Lớp 11B` | Niên khóa: `2025-2026`
 
 ---
 
-### 3. Nhóm Chức năng: Xem chi tiết và Cập nhật Học sinh (US-HS-003 & US-HS-004)
+## II. DANH SÁCH CÁC KỊCH BẢN KIỂM THỬ CHI TIẾT
 
-| Mã TC | Tên Kịch Bản Kiểm Thử | Tiền Điều Kiện | Các Bước Thực Hiện | Dữ liệu Đầu Vào | Kết Quả Mong Đợi (Expected Result) | Loại Test | Độ Ưu Tiên |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC_STU_UPD_001** | Xem chi tiết thông tin học sinh khi mở form Chỉnh sửa | Màn hình Danh sách học sinh đang mở. | Nhấn vào biểu tượng bút chì (Chỉnh sửa) ở dòng chứa học sinh `Nguyễn Văn A`. | Không có. | • Popup **"Chỉnh sửa Học sinh"** hiển thị.<br>• Tất cả các ô nhập liệu được điền chính xác thông tin hiện tại của học sinh `Nguyễn Văn A` lấy từ DB.<br>• Ô **"Mã Học sinh"** bị mờ (disabled) không cho chỉnh sửa để bảo toàn tính toàn vẹn dữ liệu. | Positive | High |
-| **TC_STU_UPD_002** | Cập nhật thông tin học sinh thành công với dữ liệu hợp lệ | Popup **"Chỉnh sửa Học sinh"** đang mở cho học sinh `Nguyễn Văn A`. | 1. Thay đổi thông tin địa chỉ và SĐT.<br>2. Nhấn nút **"Lưu lại"**. | • Địa chỉ: `Hà Nội đổi mới`<br>• SĐT: `0999999999` | • Form đóng lại.<br>• Hệ thống hiển thị thông báo: *"Cập nhật học sinh thành công."* màu xanh lá.<br>• Dòng dữ liệu của học sinh `Nguyễn Văn A` cập nhật SĐT mới ngay lập tức trên bảng hiển thị.<br>• Database lưu đúng địa chỉ và SĐT mới, cập nhật trường `LastModifiedBy = "Admin"` và `LastModifiedAt` bằng thời gian hiện tại. | Positive | High |
-| **TC_STU_UPD_003** | Cập nhật thất bại do xóa dữ liệu bắt buộc | Popup **"Chỉnh sửa Học sinh"** đang mở. | 1. Xóa nội dung trong ô **"Họ và tên"**.<br>2. Nhấn nút **"Lưu lại"**. | • Họ và tên: `""` (Rỗng) | • Hệ thống chặn submit.<br>• Hiển thị thông báo lỗi ngay dưới ô Họ tên: *"Tên phải chứa ít nhất 2 ký tự"*. | Negative | High |
-| **TC_STU_UPD_004** | Thay đổi Trạng thái học sinh sang ngừng hoạt động | Popup **"Chỉnh sửa Học sinh"** đang mở. | 1. Chọn giá trị trạng thái là **"Tạm dừng"** (hoặc Nghỉ học).<br>2. Nhấn nút **"Lưu lại"**. | • Trạng thái: Chọn `Tạm dừng` (`Status = 2`). | • Cập nhật thành công.<br>• Trên danh sách học sinh, Badge trạng thái của học sinh chuyển từ màu xanh lá (`Hoạt động`) sang màu xám (`Tạm dừng`). | Positive | High |
-| **TC_STU_UPD_005** | Hủy bỏ thao tác cập nhật thông tin | Popup **"Chỉnh sửa Học sinh"** đang mở và đã sửa đổi dữ liệu. | 1. Nhấn nút **"Hủy"**.<br>2. Kiểm tra dữ liệu ngoài danh sách học sinh. | Có chỉnh sửa thông tin nháp. | • Popup đóng lại.<br>• Dữ liệu học sinh không thay đổi.<br>• Database giữ nguyên giá trị gốc cũ. | Positive | Low |
+### 1. KỊCH BẢN KIỂM THỬ CHỨC NĂNG THÊM MỚI HỌC SINH (CREATE STUDENT)
+
+#### **TC_UI_CREATE_001: Thêm mới Học sinh thành công với toàn bộ thông tin hợp lệ (P0)**
+*   **Mục đích:** Đảm bảo hệ thống cho phép thêm mới một học sinh khi nhập đầy đủ và chính xác tất cả thông tin (bắt buộc & tự chọn).
+*   **Điều kiện đầu vào (Pre-conditions):**
+    *   Người dùng đã đăng nhập tài khoản có quyền "Nhân viên Giáo vụ" hoặc "Admin".
+    *   Đang ở màn hình danh sách Học sinh.
+*   **Dữ liệu kiểm thử (Test Data):**
+    *   Mã học sinh: `HS-2025-0001`
+    *   Họ và tên: `Nguyễn Văn Anh`
+    *   Ngày sinh: `15/05/2010` (Hợp lệ - nhỏ hơn ngày hiện tại)
+    *   Giới tính: Chọn `Nam`
+    *   Lớp học: Chọn `Lớp 10A`
+    *   Số điện thoại: `0987654321` (10 số)
+    *   Email: `vananh.nguyen@onenet.edu.vn`
+    *   Địa chỉ: `Số 123 Đường Cầu Giấy, Hà Nội`
+    *   Tên phụ huynh: `Nguyễn Văn Cha`
+    *   SĐT phụ huynh: `0912345678`
+*   **Các bước thực hiện:**
+    1. Click nút "Thêm Học Sinh Mới" trên Header.
+    2. Điền đầy đủ dữ liệu từ phần *Test Data* vào form.
+    3. Click nút "Lưu Thông Tin".
+*   **Kết quả mong đợi:**
+    *   **UI:** Modal đóng lại. Hiển thị thông báo Toast màu xanh lá (Success): "Thêm mới học sinh thành công".
+    *   **UI:** Học sinh mới hiển thị đầu tiên trong danh sách (do mặc định sắp xếp theo Tên hoặc thứ tự tạo mới).
+    *   **Database:** Truy vấn bảng `Students` thấy xuất hiện bản ghi mới với dữ liệu khớp 100% dữ liệu đã nhập. Trường `IsDeleted` = `false`, `Status` = `1` (Active), `CreatedAt` ghi nhận thời gian UTC hiện tại, `CreatedBy` = "System" hoặc tên User đăng nhập.
+
+#### **TC_UI_CREATE_002: Thêm mới thất bại do bỏ trống các trường bắt buộc (P0)**
+*   **Mục đích:** Đảm bảo hệ thống không cho phép lưu và hiển thị cảnh báo lỗi màu đỏ khi bỏ trống các trường bắt buộc trên Form.
+*   **Các bước thực hiện:**
+    1. Click nút "Thêm Học Sinh Mới".
+    2. Bỏ trống các trường: `Mã Học Sinh`, `Họ và Tên`, `Ngày Sinh`, `Lớp Học`.
+    3. Nhập các trường không bắt buộc khác tùy ý.
+    4. Click nút "Lưu Thông Tin".
+*   **Kết quả mong đợi:**
+    *   Form không được submit, không gửi request lên Server.
+    *   Dưới các trường bị bỏ trống hiển thị thông báo lỗi bằng tiếng Việt (màu đỏ - Mantine Validation):
+        *   Mã Học Sinh: `"Mã học sinh là bắt buộc"`
+        *   Họ và Tên: `"Họ và tên là bắt buộc"`
+        *   Ngày Sinh: `"Vui lòng chọn ngày sinh"`
+        *   Lớp Học: `"Lớp học là bắt buộc"`
+    *   **Database:** Không có bản ghi nào được thêm mới.
+
+#### **TC_UI_CREATE_003: Thêm mới thất bại do trùng Mã Học sinh (P1)**
+*   **Mục đích:** Đảm bảo hệ thống kiểm tra tính duy nhất (Unique) của `StudentCode` ở cả Frontend và Backend để tránh trùng lặp dữ liệu.
+*   **Điều kiện đầu vào:** Đã có học sinh mã `HS-2025-0001` trong hệ thống.
+*   **Dữ liệu kiểm thử:**
+    *   Mã học sinh: `HS-2025-0001` (trùng)
+    *   Họ và tên: `Trần Thị Bích`
+    *   Các trường khác điền hợp lệ.
+*   **Các bước thực hiện:**
+    1. Click nút "Thêm Học Sinh Mới".
+    2. Nhập Mã Học Sinh là `HS-2025-0001`.
+    3. Điền các thông tin hợp lệ khác.
+    4. Click nút "Lưu Thông Tin".
+*   **Kết quả mong đợi:**
+    *   Hệ thống thực hiện gửi API `POST /api/students`.
+    *   **Backend:** Validator `CreateStudentCommandValidator` bắt lỗi trùng lặp dữ liệu, API trả về mã lỗi `400 Bad Request` đi kèm nội dung: `"Mã học sinh đã tồn tại trên hệ thống."`
+    *   **UI (Frontend):** Bắt được lỗi của API, hiển thị một Toast notification lỗi màu đỏ chứa thông báo `"Mã học sinh đã tồn tại trên hệ thống."`
+    *   **Database:** Không có bản ghi nào được thêm mới.
+
+#### **TC_UI_CREATE_004: Validation - Ngày sinh bằng hoặc vượt quá ngày hiện tại (P1)**
+*   **Mục đích:** Kiểm tra quy tắc nghiệp vụ ngày sinh của học sinh phải luôn nằm trong quá khứ.
+*   **Dữ liệu kiểm thử:** Ngày sinh chọn là Ngày hôm nay (Today) hoặc Ngày mai (Future Date).
+*   **Các bước thực hiện:**
+    1. Click nút "Thêm Học Sinh Mới".
+    2. Tại ô "Ngày Sinh", chọn ngày hiện tại hoặc một ngày trong tương lai.
+    3. Nhập đầy đủ các thông tin hợp lệ khác.
+    4. Click nút "Lưu Thông Tin".
+*   **Kết quả mong đợi:**
+    *   Frontend ngăn chặn hành động click hoặc hiển thị lỗi trực tiếp tại ô DateInput: `"Ngày sinh phải ở trong quá khứ."`
+    *   Trường hợp bypass được FE, API trả về lỗi `400 Bad Request`: `"Ngày sinh phải ở trong quá khứ."`
+
+#### **TC_UI_CREATE_005: Validation - Sai định dạng Email hoặc Số điện thoại (P1)**
+*   **Mục đích:** Kiểm tra tính toàn vẹn định dạng dữ liệu liên lạc theo RegEx.
+*   **Dữ liệu kiểm thử:**
+    *   Email sai: `nguyenvanan.com`, `@onenet.vn`, `nguyenvanan@`
+    *   Số điện thoại sai: `0987`, `0987abc123`, `09876543211234` (quá dài)
+*   **Các bước thực hiện:**
+    1. Click "Thêm Học Sinh Mới".
+    2. Nhập Email và Số điện thoại sai định dạng như trên.
+    3. Click "Lưu Thông Tin".
+*   **Kết quả mong đợi:**
+    *   Frontend hiển thị lỗi ngay tại các trường tương ứng:
+        *   Email: `"Email không đúng định dạng"`
+        *   Số điện thoại: `"Số điện thoại không đúng định dạng."` (Kiểm định mẫu regex `^\+?[0-9]{10,12}$`).
 
 ---
 
-### 4. Nhóm Chức năng: Xóa Học sinh (US-HS-005)
+### 2. KỊCH BẢN KIỂM THỬ XEM DANH SÁCH & TRA CỨU HỌC SINH (READ / LIST / SEARCH)
 
-| Mã TC | Tên Kịch Bản Kiểm Thử | Tiền Điều Kiện | Các Bước Thực Hiện | Dữ liệu Đầu Vào | Kết Quả Mong Đợi (Expected Result) | Loại Test | Độ Ưu Tiên |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC_STU_DEL_001** | Xác nhận xóa học sinh thành công (Xóa mềm - Soft Delete) | Trang Danh sách học sinh đang mở. | 1. Nhấn biểu tượng thùng rác (Xóa) tại dòng của học sinh `Trần Thị B`.<br>2. Kiểm tra hiển thị popup xác nhận.<br>3. Nhấn **"Xóa"** (Confirm). | Không có. | • Popup xác nhận hiển thị cảnh báo: *"Bạn có chắc chắn muốn xóa học sinh [Trần Thị B] không?..."*<br>• Khi bấm xác nhận: Hệ thống hiển thị thông báo thành công: *"Đã xóa học sinh thành công."*<br>• Học sinh `Trần Thị B` biến mất hoàn toàn khỏi bảng hiển thị trên giao diện.<br>• **Kiểm tra Database:** Bản ghi của Trần Thị B **không bị mất** (không dùng lệnh DELETE vật lý) mà trường `IsDeleted` chuyển thành `true`, đồng thời trường `LastModifiedAt` được cập nhật thời gian xóa. | Positive | High |
-| **TC_STU_DEL_002** | Hủy bỏ thao tác xóa học sinh | Trang Danh sách học sinh đang mở. | 1. Nhấn biểu tượng thùng rác (Xóa) tại dòng của học sinh `Nguyễn Văn A`.<br>2. Nhấn nút **"Hủy"** trên hộp thoại xác nhận. | Không có. | • Hộp thoại xác nhận đóng lại.<br>• Học sinh `Nguyễn Văn A` vẫn hiển thị bình thường trong danh sách.<br>• Database không thay đổi dữ liệu (`IsDeleted` giữ nguyên bằng `false`). | Positive | Medium |
+#### **TC_UI_READ_001: Hiển thị danh sách học sinh mặc định có phân trang (P0)**
+*   **Mục đích:** Đảm bảo hệ thống tải đúng danh sách học sinh theo từng trang, hiển thị đầy đủ các cột thuộc tính cơ bản.
+*   **Các bước thực hiện:**
+    1. Truy cập trang "Quản lý Học sinh".
+*   **Kết quả mong đợi:**
+    *   Danh sách tải nhanh, xuất hiện biểu tượng Loading che phủ mờ (LoadingOverlay) trong lúc gọi API.
+    *   Bảng hiển thị đầy đủ 7 cột: `Mã HS`, `Họ và Tên`, `Ngày Sinh`, `Giới Tính`, `Lớp`, `Trạng Thái`, `Hành Động`.
+    *   Bên dưới bảng hiển thị: `"Tổng số: X học sinh"` (X là số bản ghi thực tế trong DB) và thanh phân trang (Pagination).
+    *   Số lượng bản ghi tối đa hiển thị trên 1 trang mặc định là 10 (theo tham số `PageSize = 10` của API).
+    *   Học sinh hiển thị được sắp xếp mặc định theo bảng chữ cái A-Z của trường Họ và Tên.
+
+#### **TC_UI_READ_002: Tìm kiếm học sinh theo Tên hoặc Mã học sinh (P0)**
+*   **Mục đích:** Đảm bảo thanh tìm kiếm hoạt động chính xác theo từ khóa không phân biệt chữ hoa, chữ thường và có hỗ trợ tìm kiếm gần đúng (Like).
+*   **Dữ liệu kiểm thử:** Có học sinh mã `HS-2025-0001` tên `Nguyễn Văn Anh` và `HS-2025-0002` tên `Trần Thị Bích`.
+*   **Các bước thực hiện:**
+    1. Nhập từ khóa `"văn anh"` vào ô "Tìm theo Tên hoặc Mã học sinh...".
+    2. Quan sát kết quả hiển thị trên bảng.
+    3. Xóa ô tìm kiếm, nhập tiếp từ khóa `"Bích"`.
+    4. Xóa ô tìm kiếm, nhập mã `"HS-2025-0001"`.
+*   **Kết quả mong đợi:**
+    *   Bước 1 & 2: Chỉ hiển thị học sinh `Nguyễn Văn Anh` trong bảng.
+    *   Bước 3: Chỉ hiển thị học sinh `Trần Thị Bích`.
+    *   Bước 4: Chỉ hiển thị học sinh `Nguyễn Văn Anh`.
+    *   Giao diện tự động lọc/tìm kiếm mượt mà mà không làm reload lại toàn bộ trang (sử dụng cache của React Query).
+
+#### **TC_UI_READ_003: Lọc học sinh theo Lớp học (P0)**
+*   **Mục đích:** Đảm bảo bộ lọc Combobox lọc chính xác học sinh thuộc về lớp học đã chọn.
+*   **Dữ liệu kiểm thử:** Chọn lớp `Lớp 10A`.
+*   **Các bước thực hiện:**
+    1. Click vào Dropdown "Lọc theo lớp học".
+    2. Chọn `Lớp 10A`.
+*   **Kết quả mong đợi:**
+    *   Bảng dữ liệu chỉ hiển thị các học sinh thuộc cột Lớp là `Lớp 10A`.
+    *   Các học sinh thuộc lớp khác (`Lớp 11B`,...) không xuất hiện trong danh sách.
+    *   Trường hợp bấm nút Clear (xóa chọn lớp) -> Danh sách tự động hiển thị đầy đủ học sinh của tất cả các lớp.
+
+#### **TC_UI_READ_004: Xử lý trạng thái Danh sách rỗng / Không có kết quả tìm kiếm (P1)**
+*   **Mục đích:** Giao diện hiển thị thân thiện khi không có dữ liệu phù hợp.
+*   **Các bước thực hiện:**
+    1. Nhập vào ô tìm kiếm một chuỗi ký tự ngẫu nhiên vô nghĩa: `"xyz99999999"`.
+*   **Kết quả mong đợi:**
+    *   Bảng dữ liệu không hiển thị bản ghi nào.
+    *   Màn hình hiển thị thông điệp trống rõ ràng: `"Không tìm thấy học sinh nào phù hợp với tiêu chí tìm kiếm."` hoặc bảng rỗng không bị vỡ giao diện.
+    *   Phân trang (Pagination) biến mất hoặc đưa về trạng thái 1 trang duy nhất không thể click.
+
+#### **TC_UI_READ_005: Xem chi tiết thông tin Học sinh (P0)**
+*   **Mục đích:** Đảm bảo người dùng có thể xem đầy đủ, chi tiết và chính xác thông tin nội bộ của học sinh dưới dạng chỉ đọc (Read-only).
+*   **Các bước thực hiện:**
+    1. Click biểu tượng con mắt (IconEye - Xem chi tiết) tại dòng của học sinh `Nguyễn Văn Anh`.
+*   **Kết quả mong đợi:**
+    *   Mở một Modal mới với tiêu đề: `"Thông tin chi tiết học sinh"`.
+    *   Các trường thông tin chi tiết hiển thị đầy đủ bao gồm cả Địa chỉ, Tên phụ huynh, SĐT phụ huynh, Email.
+    *   Giao diện gọn gàng, chia lưới Grid hợp lý, dữ liệu hiển thị chính xác tương ứng với học sinh được chọn.
+    *   Không có ô nhập liệu nào cho phép chỉnh sửa trực tiếp tại màn hình này. Có nút "Đóng" để thoát modal an toàn.
 
 ---
 
-### 5. Nhóm Kiểm thử API & Tích Hợp Hệ Thống (Integration & API Tests)
+### 3. KỊCH BẢN KIỂM THỬ CẬP NHẬT THÔNG TIN HỌC SINH (UPDATE / EDIT)
 
-*Đây là các test cases dành cho mức độ tích hợp hệ thống, kiểm tra trực tiếp qua các công cụ như Postman/Swagger để đảm bảo tính an toàn bảo mật từ phía Server-side.*
+#### **TC_UI_UPDATE_001: Cập nhật thông tin cơ bản thành công (P0)**
+*   **Mục đích:** Đảm bảo hệ thống cho phép chỉnh sửa thông tin và đồng bộ hóa thành công dữ liệu thay đổi lên Database.
+*   **Các bước thực hiện:**
+    1. Tìm học sinh `Nguyễn Văn Anh`. Click biểu tượng cây bút (IconEdit - Chỉnh sửa).
+    2. Màn hình Modal hiển thị Form đã đổ đầy đủ dữ liệu cũ của học sinh đó.
+    3. Thay đổi số điện thoại thành: `0909123456`.
+    4. Thay đổi địa chỉ thành: `Số 456 Đường Trần Hưng Đạo, Quận 1, TP. HCM`.
+    5. Click nút "Lưu Thông Tin".
+*   **Kết quả mong đợi:**
+    *   Gửi request thành công đến API `PUT /api/students/{id}`.
+    *   Giao diện hiển thị Toast thành công: `"Cập nhật học sinh thành công"`.
+    *   Bảng danh sách học sinh cập nhật ngay lập tức dữ liệu mới.
+    *   **Database:** Bản ghi học sinh được cập nhật đúng 2 trường `PhoneNumber` và `Address`. Đồng thời, kiểm tra cột `LastModifiedAt` tự động ghi nhận thời gian chỉnh sửa (UTC), `LastModifiedBy` lưu tên người chỉnh sửa.
 
-| Mã TC | Tên Kịch Bản Kiểm Thử | Tiền Điều Kiện | Các Bước Thực Hiện | Dữ liệu Đầu Vào | Kết Quả Mong Đợi (Expected Result) | Loại Test | Độ Ưu Tiên |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **TC_STU_API_001** | Gọi trực tiếp API Delete với ID không tồn tại | Backend Web API đang chạy. | Sử dụng công cụ (Postman) gửi yêu cầu `DELETE` trực tiếp lên endpoint với GUID ngẫu nhiên không có trong database. | Phương thức: `DELETE`<br>URL: `/api/students/00000000-0000-0000-0000-000000000000` | • Server xử lý qua Middleware bắt ngoại lệ và trả về mã lỗi HTTP `404 Not Found`.<br>• Nội dung phản hồi JSON thân thiện dạng:<br>`{"error": "Student with ID 00000000-0000-0000-0000-000000000000 not found."}`<br>• Hệ thống API không bị crash. | Security/ Robustness | Medium |
-| **TC_STU_API_002** | Gọi API Create với Lớp học (ClassId) không tồn tại hoặc đã bị vô hiệu hóa | Backend Web API đang chạy. | Gửi request `POST` tạo học sinh mới với mã ID của một lớp không có thực trong Database. | Phương thức: `POST`<br>URL: `/api/students`<br>Payload chứa: `"classId": "99999999-9999-9999-9999-999999999999"` | • Server xử lý nghiệp vụ qua FluentValidation chặn lại và trả về mã lỗi HTTP `400 Bad Request`.<br>• Chi tiết phản hồi chứa thông báo rõ ràng:<br>`"Lớp học được chọn không tồn tại."` | Security/ Integration | High |
-| **TC_STU_API_003** | Xác thực múi giờ UTC đồng bộ khi ghi nhận dữ liệu Ngày sinh | Database PostgreSQL đang chạy. | Gửi yêu cầu lưu học sinh mới, sau đó kiểm tra định dạng múi giờ lưu trữ thực tế trong bảng PostgreSQL. | `DateOfBirth: "2008-05-12T00:00:00.000Z"` | • Trong backend, trường được ép kiểu bằng lệnh `DateTime.SpecifyKind(..., DateTimeKind.Utc)`.<br>• Khi kiểm tra trực tiếp trong PostgreSQL: Giá trị phải được lưu dưới dạng múi giờ UTC, không bị sai lệch lệch múi giờ (lệch giờ GMT+7 của Việt Nam dẫn đến đổi ngày sinh). | Integration | Medium |
+#### **TC_UI_UPDATE_002: Kiểm tra cho phép giữ nguyên Mã Học Sinh cũ nhưng cấm trùng với Học Sinh khác (P1)**
+*   **Mục đích:** Khi sửa thông tin, hệ thống phải cho phép giữ nguyên mã học sinh của chính bản ghi đó, nhưng nếu sửa mã học sinh trùng với mã của một học sinh khác thì phải chặn lại.
+*   **Dữ liệu kiểm thử:** Học sinh A có mã `HS-2025-0001`, Học sinh B có mã `HS-2025-0002`.
+*   **Các bước thực hiện:**
+    *   **Case A (Hợp lệ):** Mở form sửa Học sinh A, thay đổi số điện thoại, giữ nguyên mã `HS-2025-0001` -> Click Lưu.
+    *   **Case B (Bị chặn):** Mở form sửa Học sinh B, sửa mã học sinh của B thành `HS-2025-0001` (trùng mã Học sinh A) -> Click Lưu.
+*   **Kết quả mong đợi:**
+    *   **Case A:** Lưu thành công bình thường (Backend xử lý loại trừ Id hiện tại qua tham số `excludeId` của hàm `IsCodeUniqueAsync`).
+    *   **Case B:** Backend bắt lỗi và trả về lỗi 400 Bad Request. Hệ thống hiển thị Toast lỗi: `"Mã học sinh đã tồn tại trên hệ thống."`
+
+#### **TC_UI_UPDATE_003: Hủy bỏ thao tác chỉnh sửa (P2)**
+*   **Mục đích:** Đảm bảo tính toàn vẹn của dữ liệu cũ nếu người dùng hủy thao tác.
+*   **Các bước thực hiện:**
+    1. Click nút "Chỉnh sửa" tại dòng học sinh bất kỳ.
+    2. Xóa trắng trường "Họ và Tên", nhập lung tung các trường khác.
+    3. Click nút "Hủy" (hoặc click ra ngoài modal, hoặc click dấu X của modal).
+*   **Kết quả mong đợi:**
+    *   Modal đóng lại.
+    *   Dữ liệu của học sinh trên bảng danh sách và trong Database không có bất kỳ thay đổi nào.
 
 ---
 
-## III. CHỈ TIÊU ĐÁNH GIÁ ĐẠT YÊU CẦU (EXIT CRITERIA)
+### 4. KỊCH BẢN KIỂM THỬ XÓA / VÔ HIỆU HÓA HỌC SINH (SOFT DELETE / INACTIVE)
 
-*   **100%** kịch bản kiểm thử loại **High** (Độ ưu tiên cao) phải được chạy thử nghiệm và đạt kết quả **Pass** (Đạt).
-*   Không còn lỗi tồn đọng có độ nghiêm trọng từ **Medium** (Trung bình) trở lên trước khi merge code vào nhánh môi trường Production/Staging.
-*   Cơ chế **Soft Delete** phải hoạt động hoàn hảo: kiểm tra không có câu lệnh `DELETE FROM Students WHERE...` nào được thực thi, thay thế bằng lệnh `UPDATE Students SET IsDeleted = true WHERE...` để bảo toàn lịch sử thông tin điểm và học tập.
+#### **TC_UI_DELETE_001: Vô hiệu hóa học sinh thành công (Soft Delete - P0)**
+*   **Mục đích:** Đảm bảo hệ thống sử dụng phương pháp "Xóa mềm" (Soft Delete). Học sinh bị xóa sẽ chuyển trạng thái và biến mất khỏi UI chính nhưng dữ liệu gốc không bị mất vĩnh viễn trong DB để bảo toàn lịch sử.
+*   **Các bước thực hiện:**
+    1. Click biểu tượng thùng rác (IconTrash - Xóa) tại dòng của học sinh `Nguyễn Văn Anh`.
+    2. Hộp thoại thông báo xác nhận của trình duyệt hoặc UI hiển thị: `"Bạn có chắc chắn muốn vô hiệu hóa học sinh này khỏi hệ thống?"`.
+    3. Click "Xác nhận" (OK).
+*   **Kết quả mong đợi:**
+    *   Giao diện gọi API `DELETE /api/students/{id}` thành công.
+    *   Hiển thị thông báo Toast: `"Xóa học sinh thành công (Soft-deleted)"`.
+    *   **UI:** Học sinh `Nguyễn Văn Anh` biến mất khỏi danh sách quản lý học sinh hiện hành.
+    *   **Database:** Truy vấn trực tiếp SQL `SELECT * FROM "Students" WHERE "Id" = '{Id_Của_Học_Sinh}'`:
+        *   Dữ liệu bản ghi **vẫn tồn tại** (Không bị xóa cứng vật lý khỏi PostgreSQL).
+        *   Cột `IsDeleted` chuyển thành `True`.
+        *   Cột `Status` chuyển thành `2` (Tương ứng `StudentStatus.Inactive`).
+        *   Trường `LastModifiedAt` cập nhật thời gian xóa.
+
+#### **TC_UI_DELETE_002: Kiểm tra Global Query Filter ở Backend (P1)**
+*   **Mục đích:** Đảm bảo các API lấy danh sách học sinh tự động loại bỏ các học sinh đã bị xóa mềm.
+*   **Điều kiện đầu vào:** Học sinh `Nguyễn Văn Anh` đã thực hiện Soft Delete thành công ở bước trước (`IsDeleted` = `True`).
+*   **Các bước thực hiện:**
+    1. Reload lại trang web "Quản lý Học sinh".
+    2. Thực hiện tìm kiếm học sinh `Nguyễn Văn Anh` bằng ô tìm kiếm.
+    3. Gọi trực tiếp API qua Swagger: `GET /api/students` hoặc `GET /api/students/{id}` của học sinh đã xóa.
+*   **Kết quả mong đợi:**
+    *   Không thể tìm thấy học sinh `Nguyễn Văn Anh` trên UI nữa.
+    *   API `GET /api/students` tuyệt đối không trả về thông tin học sinh này trong mảng `items`.
+    *   API `GET /api/students/{id}` trả về mã lỗi `404 Not Found` kèm thông điệp `"Học sinh không tìm thấy."`.
+    *   *Giải thích kỹ thuật:* Logic này hoạt động nhờ config `modelBuilder.Entity<Student>().HasQueryFilter(s => !s.IsDeleted)` trong DB Context hoạt động chuẩn xác.
+
+#### **TC_UI_DELETE_003: Hủy bỏ thao tác xóa (P2)**
+*   **Mục đích:** Đảm bảo người dùng có cơ hội sửa sai trước khi xóa dữ liệu.
+*   **Các bước thực hiện:**
+    1. Click biểu tượng "Xóa" tại một dòng học sinh bất kỳ.
+    2. Hộp thoại xác nhận hiển thị. Click "Hủy" (Cancel).
+*   **Kết quả mong đợi:**
+    *   Hộp thoại đóng lại.
+    *   Học sinh vẫn nằm trong danh sách với trạng thái hoạt động bình thường, không có thay đổi nào dưới Database.
+
+---
+
+### 5. KỊCH BẢN KIỂM THỬ BẢO MẬT & API (SECURITY & API ROBUSTNESS)
+
+#### **TC_SEC_001: Bypass Validation từ Frontend bằng cách dùng Postman/Swagger gửi dữ liệu lỗi (P1)**
+*   **Mục đích:** Đảm bảo Backend luôn thực hiện xác thực chặt chẽ (FluentValidation) phòng trường hợp kẻ xấu bypass lớp UI.
+*   **Các bước thực hiện:**
+    1. Sử dụng công cụ Postman hoặc Swagger UI để gửi trực tiếp một HTTP Request `POST /api/students` với Payload chứa dữ liệu sai nguyên tắc nghiệp vụ:
+        ```json
+        {
+          "studentCode": "", // Trống
+          "fullName": "A",
+          "dateOfBirth": "2030-12-31T00:00:00Z", // Ngày tương lai
+          "email": "invalid_email_format", // Sai email
+          "phoneNumber": "abc12345", // Sai điện thoại
+          "classId": "00000000-0000-0000-0000-000000000000" // Id trống rỗng
+        }
+        ```
+*   **Kết quả mong đợi:**
+    *   API Backend phải từ chối xử lý, trả về mã lỗi HTTP `400 Bad Request` hoặc `422 Unprocessable Entity`.
+    *   Nội dung trả về phải hiển thị rõ các lỗi validation chi tiết của từng trường dưới định dạng JSON lỗi chuẩn để Frontend hiển thị.
+    *   Không có bất kỳ dữ liệu rác nào được chèn vào DB PostgreSQL.
+
+#### **TC_SEC_002: Kiểm thử chống tấn công SQL Injection thông qua trường Tìm kiếm (SearchTerm) (P1)**
+*   **Mục đích:** Đảm bảo hệ thống an toàn trước các chuỗi truy vấn độc hại cố tình phá hoại Database.
+*   **Dữ liệu kiểm thử:** Nhập vào ô Tìm kiếm chuỗi ký tự phá hoại: `' OR 1=1 --` hoặc `' UNION SELECT * FROM "Students" --`.
+*   **Các bước thực hiện:**
+    1. Điền chuỗi dữ liệu độc hại trên vào ô Tìm kiếm trên UI hoặc tham số `SearchTerm` trên API.
+    2. Ấn Tìm kiếm / Gửi Request.
+*   **Kết quả mong đợi:**
+    *   Hệ thống không bị sập (Crash 500), không bị rò rỉ toàn bộ thông tin học sinh ra ngoài.
+    *   Hệ thống coi chuỗi đó là một chuỗi ký tự thường để so sánh tìm kiếm và trả về kết quả rỗng (vì không có ai tên như vậy).
+    *   *Giải thích kỹ thuật:* ORM Entity Framework Core sử dụng tham số hóa truy vấn (Parameterized Queries) tự động nên chống SQL Injection chuẩn xác.
+
+---
+
+## III. KẾT LUẬN & HƯỚNG DẪN THỰC THI CHO QA
+1.  **Chạy khép kín luồng (End-to-End Test):** Khuyến nghị thực hiện theo chu trình: `TC_UI_CREATE_001` (Thêm mới) -> `TC_UI_READ_002` (Tìm kiếm đối tượng vừa tạo) -> `TC_UI_READ_005` (Xem chi tiết xem đúng chưa) -> `TC_UI_UPDATE_001` (Sửa thông tin) -> `TC_UI_DELETE_001` (Xóa mềm học sinh đó) -> `TC_UI_DELETE_002` (Xác minh không hiển thị nữa).
+2.  **Đo lường thời gian đáp ứng (Performance SLA):** Mọi thao tác tìm kiếm, lọc, phân trang trên màn hình React/Mantine phải phản hồi trong vòng **< 500ms** ở môi trường mạng tiêu chuẩn. Thao tác lưu/sửa học sinh phản hồi trong vòng **< 1000ms**.
