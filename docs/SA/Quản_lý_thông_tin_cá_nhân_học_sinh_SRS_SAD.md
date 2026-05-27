@@ -1,400 +1,424 @@
-Chào bạn,
+Tuyệt vời! Với vai trò là Solution Architect của ONENET, tôi sẽ phân tích BRD này để tạo ra tài liệu SRS và SAD chi tiết.
 
-Dựa trên Tài liệu Phân tích Nghiệp vụ (BRD) đã cung cấp cho tính năng "Quản lý thông tin cá nhân học sinh" của hệ thống ONENET, tôi đã tiến hành thiết kế tài liệu Đặc tả Yêu cầu Phần mềm (SRS) và Kiến trúc Hệ thống (SAD) tuân thủ Tech Stack bắt buộc (PostgreSQL, .NET 10 Clean Architecture, React/Mantine UI).
-
-Với vai trò là Solution Architect, tôi đã thực hiện kiểm tra schema hiện tại một cách giả định (do không có công cụ thực tế để truy vấn schema ONENET đang có) để đảm bảo không có thiết kế trùng lặp hoặc mâu thuẫn chính. Giả định rằng bảng `Students` với cấu trúc như dưới đây là mới hoặc không trùng lặp hoàn toàn với một bảng đã có sẵn cùng mục đích và các ràng buộc duy nhất. Nếu có một bảng `Students` đã tồn tại, chúng ta sẽ cần phải đánh giá lại để mở rộng hoặc điều chỉnh bảng đó thay vì tạo mới.
+Dựa trên yêu cầu, tôi sẽ sử dụng các công cụ và quy tắc thiết kế kiến trúc hệ thống để đảm bảo tính nhất quán, hiệu năng và khả năng mở rộng. Đối với việc kiểm tra schema hiện tại, vì không có thông tin về schema hiện có được cung cấp, tôi sẽ thiết kế schema mới cho phần quản lý học sinh và đảm bảo tính duy nhất của Mã học sinh theo yêu cầu nghiệp vụ, cũng như thêm một khóa chính nội bộ để quản lý dữ liệu hiệu quả hơn.
 
 ---
 
-# TÀI LIỆU TỔNG HỢP SRS VÀ SAD CHO HỆ THỐNG ONENET
+# TÀI LIỆU TỔNG HỢP: SRS & SAD - PHÂN HỆ QUẢN LÝ HỌC SINH
 
-**Tính năng:** Quản lý thông tin cá nhân học sinh
-**Ngày tạo:** 19/05/2024
-**Người thiết kế:** [Tên Solution Architect - Tức là tôi]
+## Mục lục
+
+**PHẦN 1: TÀI LIỆU ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS)**
+1.  Giới thiệu
+    1.1. Mục đích
+    1.2. Phạm vi Hệ thống
+    1.3. Đối tượng sử dụng
+    1.4. Định nghĩa và Viết tắt
+    1.5. Tổng quan tài liệu
+2.  Mô tả Tổng quan Hệ thống
+    2.1. Mô tả Sản phẩm/Hệ thống
+    2.2. Chức năng của Sản phẩm
+    2.3. Vai trò Người dùng
+    2.4. Các ràng buộc
+3.  Yêu cầu Chức năng (Functional Requirements)
+    3.1. ONENET-HS-001: Thêm học sinh mới
+    3.2. ONENET-HS-002: Sửa thông tin học sinh
+    3.3. ONENET-HS-003: Xóa học sinh
+    3.4. ONENET-HS-004: Xem danh sách học sinh và tìm kiếm/lọc
+4.  Yêu cầu Phi Chức năng (Non-functional Requirements)
+    4.1. ONENET-NFR-001: Giao diện thân thiện, dễ sử dụng (Usability)
+    4.2. Hiệu năng (Performance)
+    4.3. Bảo mật (Security)
+    4.4. Khả năng mở rộng (Scalability)
+    4.5. Khả năng bảo trì (Maintainability)
+5.  Quy tắc Nghiệp vụ (Business Rules)
+    5.1. BR-HS-001: Tính duy nhất của Mã học sinh
+    5.2. BR-HS-002: Các trường bắt buộc
+    5.3. BR-HS-003: Định dạng ngày sinh
+    5.4. BR-HS-004: Định dạng số điện thoại
+    5.5. BR-HS-005: Tính toàn vẹn dữ liệu khi xóa
+6.  Mô hình Dữ liệu Logic (High-level Logical Data Model)
+
+**PHẦN 2: TÀI LIỆU KIẾN TRÚC HỆ THỐNG (SAD)**
+1.  Giới thiệu
+    1.1. Mục đích
+    1.2. Phạm vi tài liệu
+    1.3. Đối tượng độc giả
+2.  Kiến trúc Tổng quan
+    2.1. Tầm nhìn Kiến trúc
+    2.2. Sơ đồ Kiến trúc Tổng quan
+    2.3. Các lựa chọn Công nghệ (Tech Stack)
+3.  Kiến trúc Chi tiết
+    3.1. Kiến trúc Ứng dụng (Application Architecture)
+        3.1.1. Frontend (React với Mantine UI)
+        3.1.2. Backend (.NET 10 - Clean Architecture)
+    3.2. Kiến trúc Dữ liệu (Data Architecture)
+        3.2.1. Cơ sở dữ liệu (PostgreSQL)
+        3.2.2. Schema thiết kế
+    3.3. Kiến trúc Hạ tầng (Infrastructure Architecture)
+4.  Các quyết định thiết kế chính
+5.  Các vấn đề cần xem xét thêm
 
 ---
 
-## PHẦN I: ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS)
+# PHẦN 1: TÀI LIỆU ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS)
 
-### 1. Giới thiệu
+## 1. Giới thiệu
 
-#### 1.1. Mục đích
-Tài liệu này đặc tả các yêu cầu chức năng và phi chức năng cho tính năng "Quản lý thông tin cá nhân học sinh" trong hệ thống ONENET. Mục đích là cung cấp một cơ sở rõ ràng cho việc phát triển, kiểm thử và triển khai tính năng này, đảm bảo đáp ứng đầy đủ các yêu cầu nghiệp vụ đã được xác định trong BRD.
+### 1.1. Mục đích
+Tài liệu này đặc tả chi tiết các yêu cầu chức năng và phi chức năng cho phân hệ "Quản lý Thông tin Cá nhân Học sinh" thuộc hệ thống ONENET. Mục đích là cung cấp một bản mô tả rõ ràng, đầy đủ và nhất quán về các yêu cầu, làm cơ sở cho việc thiết kế, phát triển và kiểm thử phần mềm.
 
-#### 1.2. Phạm vi sản phẩm
-Tính năng này sẽ cho phép "Người quản lý học sinh" thực hiện các thao tác thêm mới, xem, sửa, xóa, tìm kiếm và lọc thông tin cá nhân của học sinh trong hệ thống.
+### 1.2. Phạm vi Hệ thống
+Phạm vi của tài liệu này tập trung vào các chức năng liên quan đến việc quản lý thông tin cá nhân của học sinh, bao gồm: thêm mới, xem danh sách, tìm kiếm, lọc, chỉnh sửa và xóa thông tin học sinh trong hệ thống ONENET.
 
-#### 1.3. Định nghĩa và Viết tắt
-*   **ONENET:** Tên hệ thống.
-*   **BRD:** Business Requirements Document (Tài liệu Phân tích Nghiệp vụ).
-*   **SRS:** Software Requirements Specification (Đặc tả Yêu cầu Phần mềm).
-*   **SAD:** Software Architecture Document (Tài liệu Kiến trúc Hệ thống).
-*   **BA:** Business Analyst.
-*   **SA:** Solution Architect.
-*   **UI:** User Interface (Giao diện người dùng).
-*   **UX:** User Experience (Trải nghiệm người dùng).
+### 1.3. Đối tượng sử dụng
+*   Business Analysts (BA)
+*   Solution Architects (SA)
+*   Development Team (Backend Developers, Frontend Developers)
+*   Quality Assurance (QA) Team
+*   Project Managers (PM)
+*   Stakeholders/End-users (Giáo vụ, Quản trị viên)
+
+### 1.4. Định nghĩa và Viết tắt
+*   **ONENET:** Tên hệ thống chung.
+*   **HS:** Học sinh.
+*   **BRD:** Business Requirement Document.
+*   **SRS:** Software Requirements Specification.
+*   **SAD:** System Architecture Document.
 *   **API:** Application Programming Interface.
-*   **DB:** Database (Cơ sở dữ liệu).
-*   **CRUD:** Create, Read, Update, Delete.
+*   **UI:** User Interface.
+*   **UX:** User Experience.
+*   **Giáo vụ:** Người chịu trách nhiệm quản lý hồ sơ và thông tin học sinh.
 
-#### 1.4. Tài liệu tham khảo
-*   Tài liệu Phân tích Yêu cầu Nghiệp vụ (BRD) - Tính năng Quản lý thông tin cá nhân học sinh, ngày 18/05/2024.
+### 1.5. Tổng quan tài liệu
+Phần này mô tả tổng quan về các yêu cầu nghiệp vụ, các chức năng chính, vai trò người dùng, ràng buộc công nghệ. Sau đó, đi sâu vào các yêu cầu chức năng và phi chức năng chi tiết, cùng với các quy tắc nghiệp vụ và mô hình dữ liệu logic.
 
-### 2. Mô tả tổng quan
+## 2. Mô tả Tổng quan Hệ thống
 
-#### 2.1. Quan điểm sản phẩm
-Tính năng "Quản lý thông tin cá nhân học sinh" là một phần của hệ thống quản lý ONENET lớn hơn, cung cấp khả năng quản lý dữ liệu học sinh tập trung. Nó sẽ tương tác với người dùng thông qua giao diện web.
+### 2.1. Mô tả Sản phẩm/Hệ thống
+Hệ thống ONENET là một hệ thống quản lý toàn diện. Phân hệ "Quản lý Học sinh" là một phần của ONENET, cho phép các vai trò được cấp phép (đặc biệt là Giáo vụ) thực hiện các thao tác quản lý thông tin cá nhân của học sinh, đảm bảo dữ liệu chính xác và cập nhật kịp thời.
 
-#### 2.2. Chức năng sản phẩm
-Các chức năng chính bao gồm:
+### 2.2. Chức năng của Sản phẩm
+Các chức năng chính của phân hệ bao gồm:
 *   Thêm mới thông tin học sinh vào hệ thống.
-*   Sửa đổi thông tin chi tiết của học sinh hiện có.
+*   Cập nhật các thông tin cá nhân của học sinh.
 *   Xóa thông tin học sinh khỏi hệ thống.
-*   Xem danh sách tất cả học sinh.
-*   Tìm kiếm học sinh theo Mã học sinh hoặc Họ và tên.
-*   Lọc học sinh theo Giới tính hoặc Lớp học.
-*   Hỗ trợ phân trang và sắp xếp danh sách học sinh.
+*   Xem danh sách học sinh, cùng với khả năng tìm kiếm và lọc dữ liệu.
 
-#### 2.3. Các lớp người dùng và đặc điểm
-*   **Người quản lý học sinh:** Là người dùng có thẩm quyền được phép thực hiện tất cả các thao tác CRUD, tìm kiếm và lọc trên thông tin học sinh. Người này cần một giao diện trực quan, hiệu quả để quản lý lượng lớn dữ liệu học sinh.
+### 2.3. Vai trò Người dùng
+*   **Giáo vụ:** Có đầy đủ quyền để thêm, sửa, xóa, xem, tìm kiếm và lọc thông tin học sinh.
 
-#### 2.4. Môi trường vận hành
-Hệ thống sẽ được triển khai trên môi trường web, có thể truy cập qua trình duyệt web phổ biến. Backend chạy trên .NET 10 và sử dụng PostgreSQL làm cơ sở dữ liệu.
+### 2.4. Các ràng buộc
+*   **Công nghệ (Tech Stack):**
+    *   Database: PostgreSQL
+    *   Backend: .NET 10 (theo Clean Architecture)
+    *   Frontend: React (sử dụng Mantine UI library)
+*   **Thời gian:** Mọi chức năng phải hoạt động ổn định và đáp ứng kịp thời.
+*   **Dữ liệu:** Các yêu cầu về tính duy nhất, định dạng và tính toàn vẹn của dữ liệu phải được tuân thủ nghiêm ngặt.
+*   **Kiến trúc:** Phải tuân thủ mô hình Clean Architecture cho Backend.
 
-#### 2.5. Các ràng buộc và phụ thuộc
-*   **Công nghệ bắt buộc (Tech Stack):**
-    *   **Cơ sở dữ liệu:** PostgreSQL.
-    *   **Backend:** .NET 10 (Clean Architecture).
-    *   **Frontend:** React (Mantine UI).
-*   Phụ thuộc vào các dịch vụ hạ tầng cơ bản (mạng, máy chủ).
-*   Yêu cầu về hiệu suất và bảo mật.
+## 3. Yêu cầu Chức năng (Functional Requirements)
 
-### 3. Yêu cầu cụ thể
+Dựa trên các User Stories và Acceptance Criteria trong BRD:
 
-#### 3.1. Yêu cầu chức năng (Functional Requirements)
+### 3.1. ONENET-HS-001: Thêm học sinh mới
+*   **ID:** FR-HS-001
+*   **Mô tả:** Hệ thống phải cho phép Giáo vụ thêm một hồ sơ học sinh mới vào hệ thống với các thông tin cá nhân.
+*   **Các yêu cầu con:**
+    *   **FR-HS-001.1: Giao diện nhập liệu:** Hệ thống phải cung cấp một giao diện người dùng cho phép Giáo vụ nhập các thông tin sau của học sinh: Họ và tên, Ngày sinh, Giới tính, Địa chỉ, Số điện thoại phụ huynh, Lớp học, Mã học sinh.
+    *   **FR-HS-001.2: Kiểm tra dữ liệu bắt buộc:** Hệ thống phải kiểm tra và yêu cầu Giáo vụ nhập đầy đủ các trường bắt buộc (Họ và tên, Ngày sinh, Giới tính, Lớp học, Mã học sinh) trước khi lưu. Nếu thiếu, hệ thống phải hiển thị thông báo lỗi tương ứng.
+    *   **FR-HS-001.3: Kiểm tra tính duy nhất của Mã học sinh:** Hệ thống phải kiểm tra xem "Mã học sinh" nhập vào đã tồn tại trong hệ thống hay chưa. Nếu đã tồn tại, hệ thống phải hiển thị thông báo lỗi và không cho phép lưu.
+    *   **FR-HS-001.4: Kiểm tra định dạng dữ liệu:** Hệ thống phải kiểm tra định dạng và tính hợp lệ của các trường dữ liệu như:
+        *   Ngày sinh: Phải là một ngày hợp lệ và không được lớn hơn ngày hiện tại.
+        *   Số điện thoại phụ huynh: Phải chứa các ký tự số và có độ dài hợp lệ (theo chuẩn Việt Nam).
+        *   Các trường khác theo yêu cầu định dạng cụ thể.
+        Nếu định dạng không hợp lệ, hệ thống phải hiển thị thông báo lỗi tương ứng.
+    *   **FR-HS-001.5: Lưu trữ thông tin:** Khi tất cả thông tin hợp lệ, hệ thống phải lưu trữ thông tin học sinh vào cơ sở dữ liệu.
+    *   **FR-HS-001.6: Thông báo xác nhận:** Sau khi thêm thành công, hệ thống phải hiển thị thông báo "Thêm học sinh thành công".
+    *   **FR-HS-001.7: Hiển thị danh sách:** Học sinh mới được thêm phải xuất hiện trong danh sách học sinh.
 
-**FR.001: Thêm học sinh mới**
-*   **FR.001.1 - Hiển thị biểu mẫu nhập liệu:**
-    *   Hệ thống phải hiển thị một biểu mẫu nhập liệu với các trường sau:
-        *   **Họ và tên:** (Bắt buộc, kiểu chuỗi, tối đa 100 ký tự, không chứa ký tự đặc biệt ngoài khoảng trắng và dấu nháy đơn).
-        *   **Ngày sinh:** (Bắt buộc, kiểu ngày, định dạng DD/MM/YYYY, phải là ngày trong quá khứ hoặc hiện tại).
-        *   **Giới tính:** (Bắt buộc, chọn từ danh sách: Nam, Nữ, Khác).
-        *   **Địa chỉ:** (Bắt buộc, kiểu chuỗi, tối đa 255 ký tự).
-        *   **Số điện thoại phụ huynh:** (Bắt buộc, kiểu chuỗi số, định dạng số điện thoại Việt Nam hợp lệ (10 hoặc 11 chữ số), chỉ chứa các ký tự số).
-        *   **Lớp học:** (Bắt buộc, kiểu chuỗi, tối đa 20 ký tự).
-        *   **Mã học sinh:** (Bắt buộc, kiểu chuỗi, duy nhất, tối đa 20 ký tự, chỉ chứa chữ cái, số, gạch ngang '-', gạch dưới '_', không chứa khoảng trắng).
-*   **FR.001.2 - Lưu thông tin học sinh thành công:**
-    *   Khi tất cả thông tin hợp lệ được điền và người dùng nhấn "Lưu", hệ thống phải:
-        *   Lưu thông tin học sinh mới vào cơ sở dữ liệu.
-        *   Hiển thị thông báo "Thêm học sinh thành công."
-        *   Chuyển hướng người dùng về trang danh sách học sinh hoặc hiển thị chi tiết học sinh vừa thêm.
-*   **FR.001.3 - Xử lý nhập liệu thiếu/sai định dạng:**
-    *   Khi người dùng nhấn "Lưu" với dữ liệu thiếu hoặc sai định dạng, hệ thống phải:
-        *   Hiển thị thông báo lỗi rõ ràng bên cạnh từng trường bị lỗi.
-        *   Không cho phép lưu thông tin.
-*   **FR.001.4 - Xử lý Mã học sinh trùng lặp:**
-    *   Khi người dùng nhấn "Lưu" với "Mã học sinh" đã tồn tại, hệ thống phải:
-        *   Hiển thị thông báo lỗi "Mã học sinh [Mã học sinh đã nhập] đã tồn tại. Vui lòng chọn Mã học sinh khác."
-        *   Không cho phép lưu thông tin.
+### 3.2. ONENET-HS-002: Sửa thông tin học sinh
+*   **ID:** FR-HS-002
+*   **Mô tả:** Hệ thống phải cho phép Giáo vụ chỉnh sửa thông tin cá nhân của một học sinh đã tồn tại.
+*   **Các yêu cầu con:**
+    *   **FR-HS-002.1: Truy cập chức năng sửa:** Hệ thống phải cung cấp chức năng "Sửa" trên màn hình chi tiết hoặc danh sách học sinh để Giáo vụ truy cập chế độ chỉnh sửa.
+    *   **FR-HS-002.2: Hiển thị thông tin hiện có:** Hệ thống phải hiển thị các thông tin hiện tại của học sinh vào giao diện chỉnh sửa.
+    *   **FR-HS-002.3: Hạn chế chỉnh sửa Mã học sinh:** Hệ thống không được phép cho phép Giáo vụ chỉnh sửa trường "Mã học sinh" sau khi đã tạo.
+    *   **FR-HS-002.4: Kiểm tra định dạng dữ liệu khi cập nhật:** Tương tự FR-HS-001.4, hệ thống phải kiểm tra định dạng và tính hợp lệ của các trường thông tin được chỉnh sửa. Nếu định dạng không hợp lệ, hệ thống phải hiển thị thông báo lỗi.
+    *   **FR-HS-002.5: Lưu trữ thay đổi:** Khi thông tin chỉnh sửa hợp lệ, hệ thống phải lưu các thay đổi vào hồ sơ học sinh tương ứng trong cơ sở dữ liệu.
+    *   **FR-HS-002.6: Thông báo xác nhận:** Sau khi cập nhật thành công, hệ thống phải hiển thị thông báo "Cập nhật thông tin học sinh thành công".
+    *   **FR-HS-002.7: Cập nhật hiển thị:** Thông tin của học sinh trên giao diện phải được cập nhật ngay lập tức theo các thay đổi mới.
+    *   **FR-HS-002.8: Hủy bỏ thao tác:** Hệ thống phải cung cấp chức năng "Hủy" để Giáo vụ có thể thoát khỏi chế độ chỉnh sửa mà không lưu bất kỳ thay đổi nào.
 
-**FR.002: Sửa thông tin học sinh**
-*   **FR.002.1 - Hiển thị biểu mẫu chỉnh sửa với dữ liệu có sẵn:**
-    *   Khi người dùng chọn chức năng "Sửa" cho một học sinh, hệ thống phải hiển thị một biểu mẫu với tất cả thông tin hiện tại của học sinh đó được điền sẵn.
-    *   Trường "Mã học sinh" phải ở chế độ chỉ đọc (read-only).
-    *   Các trường khác có thể chỉnh sửa.
-*   **FR.002.2 - Cập nhật thông tin học sinh thành công:**
-    *   Khi người dùng chỉnh sửa thông tin hợp lệ và nhấn "Cập nhật", hệ thống phải:
-        *   Cập nhật thông tin học sinh trong cơ sở dữ liệu.
-        *   Hiển thị thông báo "Cập nhật thông tin học sinh thành công."
-        *   Chuyển hướng người dùng về trang danh sách học sinh hoặc hiển thị chi tiết học sinh vừa cập nhật.
-*   **FR.002.3 - Xử lý nhập liệu thiếu/sai định dạng khi chỉnh sửa:**
-    *   Tương tự FR.001.3, hệ thống phải hiển thị lỗi và không cho phép cập nhật nếu dữ liệu thiếu hoặc sai định dạng.
+### 3.3. ONENET-HS-003: Xóa học sinh
+*   **ID:** FR-HS-003
+*   **Mô tả:** Hệ thống phải cho phép Giáo vụ xóa thông tin của một học sinh khỏi hệ thống.
+*   **Các yêu cầu con:**
+    *   **FR-HS-003.1: Truy cập chức năng xóa:** Hệ thống phải cung cấp chức năng "Xóa" trên danh sách hoặc màn hình chi tiết học sinh.
+    *   **FR-HS-003.2: Xác nhận xóa:** Khi Giáo vụ chọn xóa, hệ thống phải hiển thị hộp thoại xác nhận với thông tin "Bạn có chắc chắn muốn xóa học sinh [Tên học sinh] không? Thao tác này không thể hoàn tác."
+    *   **FR-HS-003.3: Thực hiện xóa:** Nếu Giáo vụ xác nhận xóa, hệ thống phải xóa thông tin học sinh đó cùng với các dữ liệu liên quan trực tiếp khỏi cơ sở dữ liệu.
+    *   **FR-HS-003.4: Cập nhật danh sách:** Học sinh bị xóa không còn xuất hiện trong danh sách học sinh.
+    *   **FR-HS-003.5: Thông báo xác nhận:** Sau khi xóa thành công, hệ thống phải hiển thị thông báo "Xóa học sinh thành công".
+    *   **FR-HS-003.6: Hủy bỏ thao tác xóa:** Nếu Giáo vụ chọn "Hủy" trong hộp thoại xác nhận, hệ thống không được xóa học sinh và thông tin của học sinh vẫn được giữ nguyên.
 
-**FR.003: Xóa thông tin học sinh**
-*   **FR.003.1 - Yêu cầu xác nhận trước khi xóa:**
-    *   Khi người dùng chọn chức năng "Xóa", hệ thống phải hiển thị một hộp thoại xác nhận với nội dung "Bạn có chắc chắn muốn xóa học sinh [Tên Học Sinh] (Mã: [Mã Học Sinh]) không? Thao tác này không thể hoàn tác.".
-*   **FR.003.2 - Xóa học sinh thành công:**
-    *   Khi người dùng xác nhận xóa, hệ thống phải:
-        *   Xóa thông tin học sinh đó khỏi cơ sở dữ liệu.
-        *   Hiển thị thông báo "Xóa học sinh thành công."
-        *   Đảm bảo học sinh đã xóa không còn xuất hiện trong danh sách.
-*   **FR.003.3 - Hủy bỏ thao tác xóa:**
-    *   Khi người dùng hủy bỏ thao tác xóa, hệ thống phải:
-        *   Giữ nguyên thông tin học sinh trong hệ thống.
-        *   Đóng hộp thoại xác nhận.
-*   **FR.003.4 - Xử lý trường hợp không tìm thấy học sinh để xóa:**
-    *   Nếu học sinh không tồn tại khi yêu cầu xóa, hệ thống phải hiển thị thông báo lỗi "Không tìm thấy học sinh để xóa."
+### 3.4. ONENET-HS-004: Xem danh sách học sinh và tìm kiếm/lọc
+*   **ID:** FR-HS-004
+*   **Mô tả:** Hệ thống phải cho phép Giáo vụ xem danh sách tất cả học sinh và có khả năng tìm kiếm, lọc theo các tiêu chí khác nhau.
+*   **Các yêu cầu con:**
+    *   **FR-HS-004.1: Hiển thị danh sách:** Hệ thống phải hiển thị danh sách tất cả học sinh hiện có khi Giáo vụ truy cập chức năng "Quản lý học sinh".
+    *   **FR-HS-004.2: Thông tin hiển thị cơ bản:** Mỗi học sinh trong danh sách phải hiển thị tối thiểu các thông tin: Mã học sinh, Họ và tên, Lớp học, Ngày sinh, Giới tính.
+    *   **FR-HS-004.3: Tìm kiếm theo từ khóa:** Hệ thống phải cung cấp ô tìm kiếm cho phép Giáo vụ nhập từ khóa. Tìm kiếm phải hoạt động trên các trường như Họ và tên, Mã học sinh, Lớp học, Số điện thoại phụ huynh. Tìm kiếm không phân biệt chữ hoa/thường.
+    *   **FR-HS-004.4: Lọc theo tiêu chí:** Hệ thống phải cung cấp các tùy chọn lọc theo tiêu chí (ví dụ: Lớp học, Giới tính).
+    *   **FR-HS-004.5: Kết hợp tiêu chí:** Hệ thống phải hỗ trợ kết hợp nhiều tiêu chí lọc và tìm kiếm.
+    *   **FR-HS-004.6: Xóa/Thiết lập lại bộ lọc:** Hệ thống phải có chức năng để xóa bỏ tất cả các tiêu chí tìm kiếm và lọc, hiển thị lại danh sách học sinh ban đầu.
 
-**FR.004: Xem danh sách học sinh với tìm kiếm/lọc**
-*   **FR.004.1 - Hiển thị danh sách học sinh mặc định:**
-    *   Hệ thống phải hiển thị một bảng chứa danh sách tất cả học sinh hiện có khi truy cập chức năng.
-    *   Mỗi hàng phải hiển thị: Mã học sinh, Họ và tên, Ngày sinh, Giới tính, Lớp học, Địa chỉ, Số điện thoại phụ huynh.
-    *   Danh sách phải được sắp xếp mặc định theo Họ và tên (A-Z) hoặc Mã học sinh (tăng dần).
-*   **FR.004.2 - Chức năng tìm kiếm theo từ khóa:**
-    *   Hệ thống phải cung cấp trường tìm kiếm cho "Họ và tên" và "Mã học sinh".
-    *   Khi nhập từ khóa, hệ thống phải lọc và hiển thị ngay lập tức (hoặc sau khi nhấn tìm kiếm) những học sinh có Họ và tên hoặc Mã học sinh chứa từ khóa (không phân biệt chữ hoa, chữ thường).
-    *   Khi xóa từ khóa, danh sách phải trở về trạng thái trước đó (toàn bộ hoặc theo lọc).
-*   **FR.004.3 - Chức năng lọc theo tiêu chí:**
-    *   Hệ thống phải cung cấp bộ lọc cho "Giới tính" (Nam, Nữ, Khác) và "Lớp học" (danh sách các lớp học hiện có).
-    *   Khi chọn giá trị lọc, hệ thống phải cập nhật danh sách học sinh phù hợp.
-    *   Tùy chọn "Tất cả" hoặc bỏ chọn phải loại bỏ tiêu chí lọc.
-*   **FR.004.4 - Kết hợp tìm kiếm và lọc:**
-    *   Hệ thống phải cập nhật danh sách học sinh để hiển thị những học sinh thỏa mãn tất cả các tiêu chí tìm kiếm và lọc đang được áp dụng.
-*   **FR.004.5 - Hỗ trợ phân trang và sắp xếp:**
-    *   Hệ thống phải hỗ trợ phân trang (pagination) cho danh sách học sinh.
-    *   Hệ thống phải cung cấp tùy chọn sắp xếp danh sách theo Họ và tên hoặc Mã học sinh (tăng dần/giảm dần).
+## 4. Yêu cầu Phi Chức năng (Non-functional Requirements)
 
-#### 3.2. Yêu cầu giao diện bên ngoài
+### 4.1. ONENET-NFR-001: Giao diện thân thiện, dễ sử dụng (Usability)
+*   **Mô tả:** Giao diện người dùng phải trực quan, dễ hiểu, dễ điều hướng. Các thao tác thêm, sửa, xóa, xem phải rõ ràng, có hướng dẫn cần thiết và phản hồi rõ ràng từ hệ thống.
+*   **Tiêu chí chấp nhận:**
+    *   Giáo vụ mới có thể thực hiện các thao tác cơ bản (thêm, xem, sửa) sau thời gian làm quen dưới 5 phút cho mỗi chức năng.
+    *   Các nút chức năng phải được đặt ở vị trí hợp lý và dễ nhìn thấy.
+    *   Màu sắc và bố cục phải hài hòa, tuân thủ hướng dẫn thiết kế của Mantine UI và không gây mỏi mắt khi sử dụng lâu.
+    *   Phản hồi của hệ thống (thông báo lỗi, thông báo thành công) phải rõ ràng, dễ hiểu và nhất quán.
 
-*   **Giao diện người dùng (UI):**
-    *   Phải được xây dựng bằng React và Mantine UI.
-    *   Cung cấp các biểu mẫu nhập liệu, bảng hiển thị dữ liệu, nút điều khiển, hộp thoại xác nhận, trường tìm kiếm và bộ lọc trực quan, dễ sử dụng.
-    *   Thông báo phản hồi (thành công/lỗi) phải rõ ràng, hiển thị đúng vị trí.
-*   **Giao diện phần mềm:**
-    *   Backend sẽ cung cấp một RESTful API cho frontend để thực hiện các thao tác CRUD, tìm kiếm và lọc.
-    *   Backend sẽ tương tác với cơ sở dữ liệu PostgreSQL thông qua ORM (Entity Framework Core).
+### 4.2. Hiệu năng (Performance)
+*   **Mô tả:** Hệ thống phải đáp ứng nhanh chóng các yêu cầu của người dùng.
+*   **Tiêu chí chấp nhận:**
+    *   Thời gian tải danh sách học sinh (tối đa 1000 bản ghi) không quá 2 giây.
+    *   Thời gian thực hiện các thao tác thêm, sửa, xóa học sinh không quá 1 giây (không bao gồm thời gian truyền tải dữ liệu mạng).
+    *   Tìm kiếm và lọc dữ liệu phải phản hồi trong vòng 1-2 giây.
 
-#### 3.3. Yêu cầu phi chức năng (Non-Functional Requirements)
+### 4.3. Bảo mật (Security)
+*   **Mô tả:** Thông tin học sinh là dữ liệu nhạy cảm, hệ thống phải đảm bảo tính bảo mật.
+*   **Tiêu chí chấp nhận:**
+    *   Chỉ Giáo vụ hoặc Quản trị viên đã xác thực mới có thể truy cập các chức năng quản lý học sinh.
+    *   Phân quyền truy cập theo vai trò.
+    *   Dữ liệu truyền tải giữa client và server phải được mã hóa (HTTPS).
+    *   Hệ thống phải có cơ chế chống tấn công XSS, SQL Injection.
 
-*   **Hiệu suất:**
-    *   Thời gian tải danh sách học sinh (mặc định hoặc sau tìm kiếm/lọc) không quá 2 giây.
-    *   Thời gian phản hồi cho các thao tác thêm, sửa, xóa học sinh không quá 1 giây.
-    *   Hệ thống có khả năng xử lý đồng thời 50 người dùng mà không giảm hiệu suất đáng kể.
-*   **Bảo mật:**
-    *   Chỉ "Người quản lý học sinh" mới có quyền truy cập và thực hiện các thao tác quản lý học sinh.
-    *   Dữ liệu nhạy cảm phải được bảo vệ (ví dụ: không hiển thị toàn bộ số điện thoại nếu có yêu cầu bảo mật cao hơn, mặc dù BRD không đề cập).
-    *   Hệ thống phải chống lại các lỗ hổng bảo mật web phổ biến (XSS, SQL Injection, CSRF).
-    *   Tất cả dữ liệu đầu vào phải được xác thực ở cả frontend và backend.
-*   **Độ tin cậy:**
-    *   Hệ thống phải hoạt động ổn định, có khả năng phục hồi khi gặp lỗi.
-    *   Dữ liệu phải được sao lưu định kỳ.
-*   **Tính khả dụng (Usability):**
-    *   Giao diện người dùng phải trực quan, dễ học và dễ sử dụng cho "Người quản lý học sinh".
-    *   Các thông báo lỗi và thông báo thành công phải rõ ràng, dễ hiểu và cung cấp phản hồi kịp thời.
-    *   Tuân thủ các nguyên tắc thiết kế UI/UX tốt nhất (sử dụng Mantine UI để hỗ trợ).
-*   **Khả năng bảo trì (Maintainability):**
-    *   Mã nguồn phải rõ ràng, được tổ chức tốt theo Clean Architecture.
-    *   Sử dụng các tiêu chuẩn mã hóa và quy ước đặt tên nhất quán.
-    *   Có tài liệu kỹ thuật đầy đủ.
-    *   Hệ thống phải dễ dàng mở rộng và sửa đổi để đáp ứng các yêu cầu tương lai.
-*   **Khả năng kiểm thử (Testability):**
-    *   Hệ thống phải được thiết kế để dễ dàng viết các bài kiểm thử đơn vị (Unit Test), kiểm thử tích hợp (Integration Test) và kiểm thử đầu cuối (End-to-End Test).
+### 4.4. Khả năng mở rộng (Scalability)
+*   **Mô tả:** Hệ thống phải có khả năng mở rộng để xử lý số lượng học sinh và người dùng tăng lên trong tương lai.
+*   **Tiêu chí chấp nhận:**
+    *   Kiến trúc Microservices (hoặc Monolith với khả năng chia nhỏ) để mở rộng các dịch vụ riêng lẻ.
+    *   Cơ sở dữ liệu có khả năng mở rộng (ví dụ: replication, sharding).
 
----
+### 4.5. Khả năng bảo trì (Maintainability)
+*   **Mô tả:** Hệ thống phải dễ dàng nâng cấp, sửa lỗi và thêm tính năng mới.
+*   **Tiêu chí chấp nhận:**
+    *   Mã nguồn phải rõ ràng, có cấu trúc tốt theo Clean Architecture.
+    *   Tài liệu hóa đầy đủ cho các thành phần chính.
+    *   Sử dụng các công cụ quản lý phiên bản (Git).
 
-## PHẦN II: KIẾN TRÚC HỆ THỐNG (SAD)
+## 5. Quy tắc Nghiệp vụ (Business Rules)
 
-### 1. Giới thiệu
+### 5.1. BR-HS-001: Tính duy nhất của Mã học sinh
+*   Mỗi học sinh trong hệ thống phải có một Mã học sinh duy nhất. Mã học sinh không thể trùng lặp. Mã học sinh là duy nhất trên toàn hệ thống ONENET.
 
-#### 1.1. Mục đích
-Tài liệu này mô tả kiến trúc phần mềm cho tính năng "Quản lý thông tin cá nhân học sinh" của hệ thống ONENET, tập trung vào việc tuân thủ Clean Architecture với .NET 10, React/Mantine UI và PostgreSQL.
+### 5.2. BR-HS-002: Các trường bắt buộc
+*   Họ và tên, Ngày sinh, Giới tính, Mã học sinh, Lớp học là các trường thông tin bắt buộc và không được phép để trống khi thêm mới hoặc cập nhật.
 
-#### 1.2. Phạm vi
-Phạm vi của tài liệu kiến trúc này bao gồm các thành phần chính của hệ thống, luồng dữ liệu, thiết kế cơ sở dữ liệu và các khía cạnh phi chức năng.
+### 5.3. BR-HS-003: Định dạng ngày sinh
+*   Ngày sinh phải là một ngày hợp lệ (ví dụ: không phải 30/02) và không được là ngày trong tương lai (lớn hơn ngày hiện tại). Định dạng ngày tháng năm phải thống nhất (ví dụ: DD/MM/YYYY).
 
-#### 1.3. Các bên liên quan
-Nhóm phát triển, kiểm thử, quản trị hệ thống, và các kiến trúc sư khác trong dự án ONENET.
+### 5.4. BR-HS-004: Định dạng số điện thoại
+*   Số điện thoại phụ huynh phải có định dạng số hợp lệ (chỉ chứa chữ số, có thể có dấu "+" ở đầu, độ dài hợp lệ theo chuẩn điện thoại Việt Nam).
 
-#### 1.4. Công nghệ bắt buộc (Tech Stack)
-*   **Cơ sở dữ liệu:** PostgreSQL
-*   **Backend:** .NET 10 (Clean Architecture)
-*   **Frontend:** React (Mantine UI)
+### 5.5. BR-HS-005: Tính toàn vẹn dữ liệu khi xóa
+*   Khi xóa một học sinh, tất cả dữ liệu liên quan trực tiếp đến thông tin cá nhân của học sinh đó (ví dụ: các bản ghi trong bảng `HocSinh`) phải được xóa bỏ. Cần lưu ý các ràng buộc khóa ngoại (Foreign Key) nếu có liên kết với các phân hệ khác trong tương lai (ví dụ: điểm số, chuyên cần, thông tin thi cử) để quyết định phương án xử lý (xóa cascade, xóa mềm, hoặc ngăn không cho xóa). Đối với yêu cầu hiện tại, chỉ xóa thông tin cá nhân.
 
-### 2. Mục tiêu và Ràng buộc Kiến trúc
+## 6. Mô hình Dữ liệu Logic (High-level Logical Data Model)
 
-#### 2.1. Mục tiêu Kiến trúc
-*   **Modularity và Separation of Concerns:** Tách biệt rõ ràng các lớp (Domain, Application, Infrastructure, Presentation) để dễ dàng quản lý, phát triển và bảo trì.
-*   **Maintainability:** Dễ dàng sửa đổi và mở rộng mà không ảnh hưởng đến toàn bộ hệ thống.
-*   **Testability:** Khuyến khích kiểm thử đơn vị và tích hợp.
-*   **Performance:** Đảm bảo hiệu suất tốt cho các thao tác CRUD và tìm kiếm/lọc.
-*   **Scalability:** Có khả năng mở rộng theo chiều ngang (horizontal scaling) cho các thành phần backend.
-*   **Security:** Áp dụng các biện pháp bảo mật chặt chẽ ở mọi lớp.
-*   **Adherence to Clean Architecture:** Đảm bảo các phụ thuộc hướng vào bên trong (dependencies point inwards).
+**Entity: HocSinh (Student)**
 
-#### 2.2. Ràng buộc Kiến trúc
-*   Bắt buộc phải sử dụng Tech Stack đã quy định.
-*   Tuân thủ các quy tắc và tiêu chuẩn coding của ONENET (nếu có).
+| Attribute Name              | Data Type      | Constraints           | Description                                    |
+| :-------------------------- | :------------- | :-------------------- | :--------------------------------------------- |
+| `HocSinhId`                 | GUID           | Primary Key (PK)      | Định danh duy nhất của học sinh (khóa nội bộ)  |
+| `MaHocSinh`                 | VARCHAR(20)    | Unique, Not Null      | Mã học sinh duy nhất, không trùng lặp         |
+| `HoTen`                     | NVARCHAR(100)  | Not Null              | Họ và tên đầy đủ của học sinh                 |
+| `NgaySinh`                  | DATE           | Not Null              | Ngày tháng năm sinh của học sinh             |
+| `GioiTinh`                  | NVARCHAR(10)   | Not Null              | Giới tính (Nam, Nữ, Khác)                      |
+| `DiaChi`                    | NVARCHAR(255)  | Nullable              | Địa chỉ liên hệ của học sinh                  |
+| `SoDienThoaiPhuHuynh`       | VARCHAR(15)    | Nullable              | Số điện thoại của phụ huynh                   |
+| `LopHoc`                    | NVARCHAR(20)   | Not Null              | Lớp học hiện tại của học sinh                 |
+| `NgayTao`                   | TIMESTAMP WITH TIME ZONE | Not Null              | Thời điểm bản ghi được tạo                     |
+| `NguoiTao`                  | NVARCHAR(50)   | Not Null              | Người tạo bản ghi (User ID/Name)               |
+| `NgayCapNhat`               | TIMESTAMP WITH TIME ZONE | Nullable              | Thời điểm bản ghi được cập nhật gần nhất      |
+| `NguoiCapNhat`              | NVARCHAR(50)   | Nullable              | Người cập nhật bản ghi gần nhất (User ID/Name)|
 
-### 3. Ngữ cảnh hệ thống
-
-Hệ thống Quản lý thông tin học sinh là một module trong hệ sinh thái ONENET. Nó tương tác với người dùng qua giao diện web và có thể được tích hợp với các module khác của ONENET trong tương lai (ví dụ: quản lý điểm, quản lý lớp học).
-
-```
-+-------------------+     HTTP/HTTPS     +---------------------+     SQL/Npgsql     +------------------+
-|    Người dùng     |<------------------>|    Frontend (React) |<------------------->|   Backend (.NET) |<----------------->|  Cơ sở dữ liệu   |
-| (Student Manager) |                    |     Mantine UI      |                     | Clean Architecture |                   |   (PostgreSQL)   |
-+-------------------+                    +---------------------+                     +---------------------+                   +------------------+
-```
-
-### 4. Các góc nhìn kiến trúc
-
-#### 4.1. Logical View (Clean Architecture)
-
-Kiến trúc backend sẽ tuân thủ mô hình Clean Architecture, được chia thành các lớp chính:
-
-*   **Domain Layer (Lớp Miền):**
-    *   **Mục đích:** Chứa các thực thể cốt lõi của nghiệp vụ (Domain Entities), các quy tắc nghiệp vụ (Domain Services) và các giá trị (Value Objects). Lớp này hoàn toàn độc lập với các lớp khác, không có phụ thuộc bên ngoài.
-    *   **Thực thể chính:** `Student` (Học sinh).
-    *   **Thành phần:**
-        *   `Student.cs`: Định nghĩa thực thể Học sinh với các thuộc tính và hành vi nghiệp vụ.
-        *   Các `enum` hoặc `Value Objects` liên quan (ví dụ: `Gender` nếu được định nghĩa là một Value Object).
-*   **Application Layer (Lớp Ứng dụng):**
-    *   **Mục đích:** Chứa logic nghiệp vụ cấp cao (Application Services), các DTO (Data Transfer Objects), các Command/Query và các Interface cho các dịch vụ hạ tầng (e.g., repository interfaces). Lớp này phụ thuộc vào Domain Layer.
-    *   **Thành phần:**
-        *   `IStudentRepository.cs`: Interface cho repository quản lý học sinh.
-        *   `StudentService.cs` (hoặc `StudentApplicationService`): Chứa logic nghiệp vụ chính (thêm, sửa, xóa, lấy danh sách học sinh). Sẽ nhận vào các `Command` và trả về `DTOs`.
-        *   `StudentDto.cs`: DTO để trả về thông tin học sinh cho Frontend.
-        *   `CreateStudentCommand.cs`, `UpdateStudentCommand.cs`, `DeleteStudentCommand.cs`: Các đối tượng chứa dữ liệu yêu cầu từ người dùng.
-        *   `GetStudentsQuery.cs`, `StudentQueryParams.cs`: Các đối tượng chứa tiêu chí tìm kiếm/lọc/phân trang.
-        *   `IValidator<T>.cs`: Interface cho việc xác thực dữ liệu (có thể sử dụng thư viện FluentValidation).
-*   **Infrastructure Layer (Lớp Hạ tầng):**
-    *   **Mục đích:** Chứa các triển khai cụ thể của các interface được định nghĩa trong Application Layer (ví dụ: triển khai repository, cấu hình cơ sở dữ liệu, các dịch vụ gửi email...). Lớp này phụ thuộc vào Application Layer và Domain Layer.
-    *   **Thành phần:**
-        *   `StudentRepository.cs`: Triển khai `IStudentRepository` sử dụng Entity Framework Core và PostgreSQL.
-        *   `AppDbContext.cs`: DbContext của Entity Framework Core.
-        *   Cấu hình Npgsql cho PostgreSQL.
-        *   `LoggingService.cs`: Triển khai dịch vụ ghi log (ví dụ: sử dụng Serilog).
-        *   `ValidationBehaviors.cs`: Middleware hoặc pipeline behavior để thực hiện validation trước khi xử lý command/query.
-*   **Presentation Layer (Lớp Trình bày - API & UI):**
-    *   **Mục đích:** Cung cấp giao diện người dùng và các API endpoints. Lớp này phụ thuộc vào Application Layer (để gọi các Application Services) và Infrastructure Layer (nếu cần các dịch vụ hạ tầng trực tiếp).
-    *   **Backend (Web API - .NET 10):**
-        *   `StudentsController.cs`: RESTful API Controller, xử lý các HTTP requests (GET, POST, PUT, DELETE) từ Frontend. Gọi các Application Services để xử lý nghiệp vụ.
-        *   Cấu hình Dependency Injection, Authentication/Authorization.
-    *   **Frontend (React - Mantine UI):**
-        *   Các Components React sử dụng Mantine UI:
-            *   `StudentList.tsx`: Hiển thị danh sách học sinh, chứa bảng, tìm kiếm, lọc, phân trang.
-            *   `StudentForm.tsx`: Biểu mẫu thêm/sửa học sinh.
-            *   `ConfirmDeleteModal.tsx`: Hộp thoại xác nhận xóa.
-            *   Các Services để gọi API backend.
-            *   State management (ví dụ: React Query, Redux Toolkit, hoặc Context API).
-
-**Tương tác tổng thể (Luồng yêu cầu):**
-1.  **Frontend (React):** Người dùng thực hiện thao tác (ví dụ: nhấn nút "Thêm học sinh").
-2.  **API (StudentsController):** Frontend gửi yêu cầu HTTP (POST /api/students) đến API. Controller nhận `CreateStudentCommand`.
-3.  **Application Layer (StudentService):** Controller gọi `StudentService` (hoặc gửi Command qua Mediator pattern) để xử lý. `StudentService` thực hiện validation, tương tác với `IStudentRepository`.
-4.  **Domain Layer (Student Entity):** `StudentService` tạo ra hoặc sửa đổi các đối tượng `Student` trong Domain Layer, áp dụng các quy tắc nghiệp vụ.
-5.  **Infrastructure Layer (StudentRepository):** `StudentService` sử dụng `StudentRepository` (triển khai `IStudentRepository`) để lưu trữ/truy vấn dữ liệu từ PostgreSQL thông qua Entity Framework Core.
-6.  **Cơ sở dữ liệu (PostgreSQL):** Dữ liệu được đọc/ghi vào bảng `Students`.
-7.  **Phản hồi:** Kết quả được trả về từ DB -> Infrastructure -> Application -> API -> Frontend để hiển thị cho người dùng.
-
-#### 4.2. Data View (PostgreSQL Schema)
-
-*   **Kiểm tra Schema hiện tại:** Giả định rằng trong hệ thống ONENET, chưa có một bảng quản lý thông tin học sinh nào có ràng buộc duy nhất `StudentId` hoặc các trường dữ liệu tương tự gây trùng lặp mục đích chính. Nếu có, cần đánh giá để tái sử dụng hoặc mở rộng. Trong trường hợp này, chúng ta sẽ thiết kế một bảng mới.
-
-*   **Bảng chính:** `Students`
-    *   **Mục đích:** Lưu trữ thông tin cá nhân của mỗi học sinh.
-    *   **Cấu trúc (DDL):**
-        ```sql
-        CREATE TABLE Students (
-            Id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- Khóa chính nội bộ, sử dụng UUID để dễ mở rộng và phân tán
-            StudentId VARCHAR(20) UNIQUE NOT NULL,         -- Mã học sinh (duy nhất, không trùng lặp)
-            FullName VARCHAR(100) NOT NULL,                -- Họ và tên
-            DateOfBirth DATE NOT NULL,                     -- Ngày sinh (phải là ngày trong quá khứ hoặc hiện tại, kiểm tra ở app layer hoặc CHECK constraint)
-            Gender VARCHAR(10) NOT NULL,                   -- Giới tính (Nam, Nữ, Khác - kiểm tra ở app layer)
-            Address VARCHAR(255) NOT NULL,                 -- Địa chỉ
-            ParentPhoneNumber VARCHAR(15) NOT NULL,        -- Số điện thoại phụ huynh (có thể chấp nhận 10 hoặc 11 số, kiểm tra ở app layer)
-            ClassName VARCHAR(20) NOT NULL,                -- Lớp học
-            CreatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL, -- Thời điểm tạo bản ghi (audit)
-            UpdatedAt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL  -- Thời điểm cập nhật bản ghi cuối cùng (audit)
-            -- Có thể thêm các CHECK constraint nếu cần validation chặt chẽ ở DB level,
-            -- ví dụ: CHECK (DateOfBirth <= CURRENT_DATE), CHECK (Gender IN ('Nam', 'Nữ', 'Khác'))
-        );
-        ```
-    *   **Chỉ mục (Indexes):**
-        *   `idx_students_student_id` (trên `StudentId`): Đã được tạo tự động với `UNIQUE NOT NULL`.
-        *   `idx_students_full_name` (trên `FullName`): Để tối ưu hóa tìm kiếm và sắp xếp theo tên.
-        *   `idx_students_class_name` (trên `ClassName`): Để tối ưu hóa lọc theo lớp học.
-        ```sql
-        CREATE INDEX idx_students_full_name ON Students (FullName);
-        CREATE INDEX idx_students_class_name ON Students (ClassName);
-        ```
-
-#### 4.3. Process View (Lược đồ xử lý)
-
-*   **Thêm học sinh:**
-    1.  Frontend gửi `POST /api/students` với dữ liệu `CreateStudentCommand`.
-    2.  API Controller xác thực dữ liệu (ví dụ: FluentValidation).
-    3.  Controller gọi `StudentService.CreateStudent(command)`.
-    4.  `StudentService` kiểm tra `StudentId` duy nhất.
-    5.  `StudentService` tạo đối tượng `Student` domain, lưu qua `IStudentRepository.Add(student)`.
-    6.  `StudentRepository` (EF Core) thêm vào DB, gọi `_dbContext.SaveChanges()`.
-    7.  Trả về `StudentDto` và thông báo thành công.
-*   **Sửa học sinh:**
-    1.  Frontend gửi `PUT /api/students/{id}` với dữ liệu `UpdateStudentCommand`.
-    2.  API Controller xác thực dữ liệu.
-    3.  Controller gọi `StudentService.UpdateStudent(id, command)`.
-    4.  `StudentService` tìm `Student` theo `id` qua `IStudentRepository.GetById(id)`.
-    5.  `StudentService` cập nhật thuộc tính của đối tượng `Student` domain, lưu qua `IStudentRepository.Update(student)`.
-    6.  `StudentRepository` (EF Core) cập nhật vào DB, gọi `_dbContext.SaveChanges()`.
-    7.  Trả về `StudentDto` và thông báo thành công.
-*   **Xóa học sinh:**
-    1.  Frontend gửi `DELETE /api/students/{id}`.
-    2.  API Controller gọi `StudentService.DeleteStudent(id)`.
-    3.  `StudentService` tìm `Student` theo `id`, xóa qua `IStudentRepository.Delete(student)`.
-    4.  `StudentRepository` (EF Core) xóa khỏi DB, gọi `_dbContext.SaveChanges()`.
-    5.  Trả về thông báo thành công.
-*   **Xem danh sách, tìm kiếm, lọc, phân trang:**
-    1.  Frontend gửi `GET /api/students` với các tham số query (search, filter, page, pageSize, sortBy, sortOrder).
-    2.  API Controller gọi `StudentService.GetStudents(queryParams)`.
-    3.  `StudentService` sử dụng `IStudentRepository.GetAll(queryParams)` để truy vấn dữ liệu.
-    4.  `StudentRepository` xây dựng truy vấn LINQ/SQL với EF Core, áp dụng các điều kiện tìm kiếm, lọc, phân trang, sắp xếp.
-    5.  Trả về danh sách `StudentDto` và thông tin phân trang.
-
-#### 4.4. Deployment View (Lược đồ triển khai)
-
-Hệ thống sẽ được triển khai theo mô hình ba tầng điển hình:
-
-```
-+-------------------------------------------------------------+
-|                          CLIENT LAYER                       |
-|                   (Web Browser - React App)                 |
-+-------------------------------------------------------------+
-       | HTTP/HTTPS
-       v
-+-------------------------------------------------------------+
-|                      APPLICATION LAYER                      |
-|                                                             |
-|   +-------------------+     +-------------------------+     |
-|   |   Load Balancer   |<----|  .NET 10 Web API (Kestrel)|    |
-|   |   (e.g., Nginx)   |     |    (Multiple instances)   |    |
-|   +-------------------+     +-------------------------+     |
-|             ^                                               |
-|             |                                               |
-|             +-----------------------------------------------+
-|                                                             |
-+-------------------------------------------------------------+
-       | SQL (Npgsql)
-       v
-+-------------------------------------------------------------+
-|                         DATABASE LAYER                      |
-|                  (PostgreSQL Server Cluster)                |
-+-------------------------------------------------------------+
-```
-
-*   **Client Layer:** Người dùng truy cập ứng dụng React thông qua trình duyệt web.
-*   **Application Layer:**
-    *   React frontend được build thành các tệp tĩnh (HTML, CSS, JS) và được phục vụ bởi một web server (ví dụ: Nginx, IIS, hoặc Azure App Service).
-    *   Backend .NET 10 Web API được triển khai trên các máy chủ ứng dụng (ví dụ: Docker containers, Azure App Service, Kubernetes).
-    *   Một bộ cân bằng tải (Load Balancer) sẽ phân phối lưu lượng truy cập giữa các instance của Web API để đảm bảo khả năng mở rộng và chịu lỗi.
-*   **Database Layer:** Cơ sở dữ liệu PostgreSQL được triển khai trên một máy chủ hoặc cụm máy chủ chuyên dụng, có thể là dịch vụ được quản lý (ví dụ: Azure Database for PostgreSQL) để đảm bảo độ tin cậy và hiệu suất.
-
-### 5. Các vấn đề xuyên suốt (Cross-Cutting Concerns)
-
-*   **Xác thực và Ủy quyền (Authentication & Authorization):**
-    *   Backend API sẽ yêu cầu xác thực người dùng (ví dụ: JWT Bearer Token) và kiểm tra quyền (`[Authorize(Roles = "StudentManager")]`) cho tất cả các endpoint liên quan đến quản lý học sinh.
-*   **Xử lý lỗi và Ghi log (Error Handling & Logging):**
-    *   Sử dụng middleware trong .NET để xử lý lỗi toàn cục, trả về các lỗi nhất quán cho frontend (ví dụ: HTTP 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Server Error).
-    *   Sử dụng thư viện ghi log (ví dụ: Serilog) để ghi lại các sự kiện quan trọng, lỗi và thông tin debug vào các hệ thống log tập trung (ví dụ: ELK Stack, Azure Monitor).
-*   **Xác thực dữ liệu (Data Validation):**
-    *   Thực hiện xác thực dữ liệu ở cả frontend (Mantine form validation) và backend (sử dụng FluentValidation trong Application Layer hoặc Model Validation trong Controller).
-*   **Cấu hình (Configuration Management):**
-    *   Sử dụng `appsettings.json` trong .NET cho các cấu hình ứng dụng, và biến môi trường cho các thông tin nhạy cảm (chuỗi kết nối DB, khóa API) khi triển khai.
-*   **Giám sát (Monitoring):**
-    *   Triển khai các công cụ giám sát hiệu suất ứng dụng (APM) để theo dõi hiệu suất backend và database.
-    *   Giám sát lỗi và cảnh báo cho các sự cố hệ thống.
-*   **Quản lý phiên bản (Version Control):**
-    *   Sử dụng Git (ví dụ: với GitHub, GitLab, Azure DevOps Repos) để quản lý mã nguồn.
+*Lưu ý về `HocSinhId` và `MaHocSinh`: `HocSinhId` được dùng làm khóa chính nội bộ, giúp việc quản lý mối quan hệ trong CSDL dễ dàng và hiệu quả hơn, độc lập với mã nghiệp vụ. `MaHocSinh` là mã nghiệp vụ duy nhất được yêu cầu bởi BA, sẽ được định nghĩa là một ràng buộc UNIQUE.*
 
 ---
 
-Hy vọng tài liệu này cung cấp một cái nhìn toàn diện và rõ ràng về các yêu cầu và thiết kế kiến trúc cho tính năng Quản lý thông tin cá nhân học sinh trong hệ thống ONENET.
+# PHẦN 2: TÀI LIỆU KIẾN TRÚC HỆ THỐNG (SAD)
+
+## 1. Giới thiệu
+
+### 1.1. Mục đích
+Tài liệu này mô tả kiến trúc tổng thể và chi tiết của phân hệ "Quản lý Thông tin Cá nhân Học sinh" trong hệ thống ONENET, dựa trên các yêu cầu từ SRS và tuân thủ các quy định công nghệ bắt buộc. Mục đích là cung cấp một cái nhìn toàn diện về cấu trúc hệ thống, cách thức các thành phần tương tác, và các quyết định thiết kế quan trọng.
+
+### 1.2. Phạm vi tài liệu
+Tài liệu này bao gồm kiến trúc ứng dụng (Frontend & Backend), kiến trúc dữ liệu và kiến trúc hạ tầng cho phân hệ quản lý học sinh.
+
+### 1.3. Đối tượng độc giả
+*   Development Team (Backend Developers, Frontend Developers)
+*   DevOps Engineers
+*   Quality Assurance (QA) Team
+*   Project Managers (PM)
+*   Other Solution Architects
+
+## 2. Kiến trúc Tổng quan
+
+### 2.1. Tầm nhìn Kiến trúc
+Kiến trúc của phân hệ quản lý học sinh sẽ được thiết kế theo hướng hiện đại, phân lớp, có khả năng mở rộng, bảo trì cao và hiệu suất tốt. Sử dụng Clean Architecture cho Backend giúp tách biệt rõ ràng các mối quan tâm, dễ dàng kiểm thử và thay đổi. Frontend được xây dựng với React và Mantine UI để đảm bảo trải nghiệm người dùng tốt và phát triển nhanh chóng.
+
+### 2.2. Sơ đồ Kiến trúc Tổng quan
+
+```mermaid
+graph TD
+    A[Người dùng - Giáo vụ] -->|Truy cập qua Web Browser| B(Frontend - React/Mantine UI)
+    B -->|API Requests (HTTP/HTTPS)| C(Backend - .NET 10 API)
+    C -->|CRUD Operations| D(Database - PostgreSQL)
+
+    subgraph Hệ thống ONENET
+        B
+        C
+        D
+    end
+```
+
+**Mô tả:**
+*   **Frontend:** Giao diện người dùng được phát triển bằng React với thư viện Mantine UI, chạy trên trình duyệt của người dùng.
+*   **Backend:** API được phát triển bằng .NET 10 theo Clean Architecture, xử lý logic nghiệp vụ và tương tác với cơ sở dữ liệu.
+*   **Database:** PostgreSQL là cơ sở dữ liệu quan hệ được sử dụng để lưu trữ tất cả thông tin học sinh.
+
+### 2.3. Các lựa chọn Công nghệ (Tech Stack)
+Tuân thủ các quy định công nghệ bắt buộc:
+*   **Frontend Framework:** React
+*   **Frontend UI Library:** Mantine UI
+*   **Backend Framework:** .NET 10
+*   **Backend Architecture:** Clean Architecture
+*   **Database:** PostgreSQL
+
+## 3. Kiến trúc Chi tiết
+
+### 3.1. Kiến trúc Ứng dụng (Application Architecture)
+
+#### 3.1.1. Frontend (React với Mantine UI)
+*   **Cấu trúc dự án:** Sẽ theo cấu trúc chuẩn của ứng dụng React, có thể sử dụng Vite hoặc Create React App.
+    *   `src/components`: Các thành phần UI tái sử dụng (ví dụ: StudentTable, StudentForm).
+    *   `src/pages`: Các trang chính của ứng dụng (ví dụ: StudentListPage, StudentDetailPage, AddStudentPage).
+    *   `src/services`: Logic gọi API Backend.
+    *   `src/hooks`: Custom hooks cho logic tái sử dụng.
+    *   `src/context` hoặc `src/store`: Quản lý trạng thái (ví dụ: React Context API, Redux Toolkit, Zustand).
+*   **Routing:** Sử dụng React Router để điều hướng giữa các trang.
+*   **State Management:** Tùy chọn, có thể sử dụng React Context API hoặc các thư viện như Zustand/Redux Toolkit cho trạng thái phức tạp hơn.
+*   **UI Components:** Toàn bộ giao diện người dùng sẽ được xây dựng bằng các components từ Mantine UI, đảm bảo tính nhất quán và tối ưu UX.
+*   **API Interaction:** Sử dụng `fetch` API hoặc thư viện như `Axios` để gửi các yêu cầu HTTP/HTTPS tới Backend API.
+*   **Validation:** Thực hiện kiểm tra định dạng dữ liệu phía client-side để cung cấp phản hồi tức thì cho người dùng, sử dụng các thư viện như `react-hook-form` kết hợp với `Zod` để tối ưu trải nghiệm người dùng và giảm tải cho backend.
+
+#### 3.1.2. Backend (.NET 10 - Clean Architecture)
+Cấu trúc dự án sẽ tuân thủ Clean Architecture, chia thành các layer logic:
+
+*   **`ONENET.Application` (Application Layer):**
+    *   Chứa các **Use Cases** (ví dụ: `CreateStudentCommand`, `UpdateStudentCommand`, `DeleteStudentCommand`, `GetStudentListQuery`, `GetStudentByIdQuery`) và **Handlers** (sử dụng MediatR).
+    *   Định nghĩa các **Interfaces** cho Persistence (`IStudentRepository`) và External Services.
+    *   Chứa logic nghiệp vụ cụ thể cho từng Use Case.
+    *   Thực hiện các validation nghiệp vụ (ví dụ: `MaHocSinh` duy nhất).
+*   **`ONENET.Domain` (Domain Layer):**
+    *   Chứa các **Entities** (ví dụ: `Student` - ánh xạ tới `HocSinh` trong CSDL).
+    *   Định nghĩa **Value Objects** (nếu có, ví dụ: `PhoneNumber`).
+    *   Chứa các quy tắc nghiệp vụ cốt lõi (Domain Business Rules).
+    *   Hoàn toàn độc lập với các layer khác.
+*   **`ONENET.Infrastructure` (Infrastructure Layer):**
+    *   Triển khai các Interfaces được định nghĩa trong `Application` và `Domain`.
+    *   **Persistence:** `DbContext` (Entity Framework Core) cho PostgreSQL, triển khai `IStudentRepository` để tương tác với cơ sở dữ liệu.
+    *   **External Services:** Nếu có các dịch vụ bên ngoài, sẽ triển khai tại đây.
+    *   Cấu hình DI, Logging, Authentication/Authorization.
+*   **`ONENET.Presentation` (API - Web API Layer):**
+    *   Chứa các **Controllers** (ví dụ: `StudentsController`) để nhận các yêu cầu HTTP.
+    *   Sử dụng **DTOs** (Data Transfer Objects) để chuyển đổi dữ liệu giữa API và Application layer.
+    *   Xử lý ánh xạ các yêu cầu HTTP thành các `Command` hoặc `Query` và gửi đến `Application` layer thông qua MediatR.
+    *   Quản lý lỗi và phản hồi HTTP.
+    *   Thực hiện validation cơ bản của đầu vào request (Model Validation).
+
+```mermaid
+graph TD
+    UserRequest[HTTP Request] --> API[ONENET.Presentation (Web API)]
+    API -->|DTOs, Commands/Queries| Application[ONENET.Application (Use Cases, Handlers)]
+    Application -->|Entities, Domain Services| Domain[ONENET.Domain (Entities, Business Rules)]
+    Application -->|Interfaces| Infrastructure[ONENET.Infrastructure (EF Core, Repositories)]
+    Infrastructure --> Database[PostgreSQL Database]
+
+    style API fill:#f9f,stroke:#333,stroke-width:2px
+    style Application fill:#ccf,stroke:#333,stroke-width:2px
+    style Domain fill:#cfc,stroke:#333,stroke-width:2px
+    style Infrastructure fill:#ffc,stroke:#333,stroke-width:2px
+    style Database fill:#cff,stroke:#333,stroke-width:2px
+```
+
+### 3.2. Kiến trúc Dữ liệu (Data Architecture)
+
+#### 3.2.1. Cơ sở dữ liệu (PostgreSQL)
+*   **Lựa chọn:** PostgreSQL được chọn vì tính mạnh mẽ, mã nguồn mở, hỗ trợ tốt cho các kiểu dữ liệu phức tạp và hiệu suất cao.
+*   **ORM:** Entity Framework Core sẽ được sử dụng để tương tác với PostgreSQL, giúp quản lý schema, migration và các thao tác CRUD hiệu quả.
+
+#### 3.2.2. Schema thiết kế
+Dựa trên mô hình dữ liệu logic và yêu cầu nghiệp vụ:
+
+**Table: `Students`** (Tên bảng thường là số nhiều trong tiếng Anh)
+
+| Column Name              | Data Type                     | Constraints                                     | Description                                    |
+| :----------------------- | :---------------------------- | :---------------------------------------------- | :--------------------------------------------- |
+| `Id`                     | `UUID` (GUID)                 | `PRIMARY KEY`                                   | Khóa chính duy nhất cho bảng                  |
+| `StudentCode`            | `VARCHAR(20)`                 | `UNIQUE`, `NOT NULL`                            | Mã học sinh duy nhất (ví dụ: HS2024001)       |
+| `FullName`               | `VARCHAR(100)`                | `NOT NULL`                                      | Họ và tên đầy đủ                               |
+| `DateOfBirth`            | `DATE`                        | `NOT NULL`                                      | Ngày tháng năm sinh                            |
+| `Gender`                 | `VARCHAR(10)`                 | `NOT NULL`                                      | Giới tính (Nam, Nữ, Khác)                      |
+| `Address`                | `VARCHAR(255)`                | `NULLABLE`                                      | Địa chỉ liên hệ                                |
+| `ParentPhoneNumber`      | `VARCHAR(15)`                 | `NULLABLE`                                      | Số điện thoại phụ huynh                        |
+| `ClassName`              | `VARCHAR(20)`                 | `NOT NULL`                                      | Lớp học hiện tại                               |
+| `CreatedAt`              | `TIMESTAMP WITH TIME ZONE`    | `NOT NULL`, `DEFAULT NOW()`                     | Thời điểm tạo bản ghi                          |
+| `CreatedBy`              | `VARCHAR(50)`                 | `NOT NULL`                                      | Người tạo bản ghi                              |
+| `UpdatedAt`              | `TIMESTAMP WITH TIME ZONE`    | `NULLABLE`                                      | Thời điểm cập nhật cuối cùng                   |
+| `UpdatedBy`              | `VARCHAR(50)`                 | `NULLABLE`                                      | Người cập nhật cuối cùng                       |
+
+*   **Tên bảng/cột:** Sử dụng quy ước đặt tên Snake Case hoặc Pascal Case consistent cho PostgreSQL. (Ví dụ: `student_code` hoặc `StudentCode`). Với EF Core, Pascal Case thường được dùng trong code và được chuyển đổi sang Snake Case khi tạo bảng trong PostgreSQL.
+*   **Ràng buộc `UNIQUE` cho `StudentCode`:** Đảm bảo BR-HS-001 được tuân thủ.
+*   **`DateOfBirth` Validation:** Sẽ được kiểm tra ở Application Layer (và client-side) để đảm bảo không phải là ngày trong tương lai.
+*   **Audit Fields:** `CreatedAt`, `CreatedBy`, `UpdatedAt`, `UpdatedBy` là các trường tiêu chuẩn để theo dõi lịch sử thay đổi của dữ liệu.
+
+### 3.3. Kiến trúc Hạ tầng (Infrastructure Architecture)
+*   **Môi trường:**
+    *   **Development:** Docker Compose cho phép các nhà phát triển chạy cục bộ môi trường ứng dụng (Backend API, PostgreSQL) một cách dễ dàng và nhất quán.
+    *   **Staging/Production:** Sử dụng Kubernetes (K8s) để triển khai và quản lý các container của Backend API và Frontend (có thể thông qua Nginx/Ingress Controller). K8s cung cấp khả năng tự động cân bằng tải, mở rộng và tự phục hồi.
+*   **Deployment:**
+    *   CI/CD Pipelines (ví dụ: Azure DevOps Pipelines, GitHub Actions) để tự động hóa quá trình build, test và deploy.
+    *   Docker Images cho Backend và Frontend.
+*   **Networking:**
+    *   API Gateway: Có thể được sử dụng để định tuyến các yêu cầu đến Backend API, cung cấp các tính năng như authentication, rate limiting, logging tập trung.
+    *   Load Balancers: Để phân phối lưu lượng truy cập đến các instance của Backend API, đảm bảo tính sẵn sàng và hiệu suất.
+    *   HTTPS: Tất cả giao tiếp client-server phải được mã hóa bằng HTTPS.
+*   **Monitoring & Logging:**
+    *   Logging: Sử dụng Serilog cho Backend để ghi log vào các hệ thống tập trung như ELK Stack (Elasticsearch, Logstash, Kibana) hoặc Prometheus/Grafana.
+    *   Monitoring: Prometheus để thu thập metrics và Grafana để visualize.
+    *   Alerting: Cấu hình cảnh báo cho các sự cố hoặc ngưỡng hiệu năng.
+*   **Backup & Recovery:** Thiết lập cơ chế sao lưu định kỳ cho cơ sở dữ liệu PostgreSQL và kế hoạch phục hồi thảm họa.
+
+## 4. Các quyết định thiết kế chính
+
+*   **Clean Architecture cho Backend:** Được chọn để đảm bảo tính module hóa, khả năng kiểm thử cao, dễ dàng bảo trì và mở rộng trong tương lai. Nó cũng giúp tách biệt logic nghiệp vụ khỏi các chi tiết công nghệ.
+*   **Sử dụng MediatR:** Giúp triển khai các Command/Query Pattern và Request/Response Pattern một cách rõ ràng, giúp quản lý các Use Case trong Application Layer hiệu quả hơn.
+*   **Entity Framework Core:** Là ORM mạnh mẽ và được hỗ trợ tốt cho .NET, giúp tương tác với PostgreSQL một cách hiệu quả và tự động hóa nhiều tác vụ liên quan đến CSDL.
+*   **Mantine UI:** Cung cấp bộ component UI phong phú, giúp đẩy nhanh quá trình phát triển Frontend và đảm bảo tính nhất quán về giao diện người dùng.
+*   **UUID cho PK (`Id`) và `StudentCode` là `UNIQUE`:** Tách biệt khóa chính kỹ thuật với mã nghiệp vụ giúp linh hoạt hơn trong quản lý dữ liệu và duy trì tính toàn vẹn nghiệp vụ.
+
+## 5. Các vấn đề cần xem xét thêm
+
+*   **Xử lý lỗi toàn cục (Global Error Handling):** Cần triển khai một cơ chế xử lý lỗi nhất quán trên cả Frontend và Backend để cung cấp phản hồi rõ ràng cho người dùng.
+*   **Phân quyền chi tiết (Authorization):** Mặc dù BRD chỉ nhắc đến "Giáo vụ" và "Quản trị viên", cần xác định rõ các quyền cụ thể (ví dụ: Giáo vụ chỉ quản lý học sinh của mình, Quản trị viên quản lý tất cả).
+*   **Tích hợp với các phân hệ khác của ONENET:** BR-HS-005 đã đề cập đến tính toàn vẹn dữ liệu khi xóa. Cần có một phân tích chi tiết hơn về các mối quan hệ nếu có các phân hệ như "Quản lý Điểm", "Quản lý Chuyên cần" để quyết định cách xử lý khi xóa học sinh (xóa mềm, cảnh báo, ngăn chặn xóa).
+*   **Đa ngôn ngữ:** Nếu ONENET có yêu cầu hỗ trợ nhiều ngôn ngữ, cần xem xét kiến trúc i18n/l10n cho cả Frontend và Backend.
+*   **Cache:** Đối với các danh sách hoặc dữ liệu ít thay đổi nhưng được truy cập thường xuyên, việc triển khai cơ chế caching (ví dụ: Redis) có thể cải thiện hiệu suất.
+
+---
