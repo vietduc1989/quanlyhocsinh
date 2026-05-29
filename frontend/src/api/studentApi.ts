@@ -1,60 +1,48 @@
+/*
+ * FEATURE CODE: QUAN-20260529-0943
+ * Project: ONENET Student Management System
+ * Layer: Frontend (API Client)
+ */
+
 import axios from 'axios';
+import { Student, StudentsResponse } from '../types/student';
 
-const API_BASE_URL = '/api/students';
-
-export interface Student {
-  id?: string;
-  studentCode: string;
-  fullName: string;
-  dateOfBirth: string;
-  gender: string;
-  address?: string;
-  phoneNumber?: string;
-  email?: string;
-  classId: string;
-  className?: string;
-  parentName?: string;
-  parentPhoneNumber?: string;
-  status?: number;
-  statusText?: string;
-}
-
-export interface PagedResult<T> {
-  items: T[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export interface GetStudentsParams {
-  searchTerm?: string;
-  classId?: string;
-  pageNumber: number;
-  pageSize: number;
-}
+const API_BASE_URL = '/api/v1/students';
 
 export const studentApi = {
-  getStudents: async (params: GetStudentsParams): Promise<PagedResult<Student>> => {
-    const response = await axios.get<PagedResult<Student>>(API_BASE_URL, { params });
+  getStudents: async (searchQuery: string, page: number): Promise<StudentsResponse> => {
+    const response = await axios.get<StudentsResponse>(API_BASE_URL, {
+      params: { searchQuery, page, pageSize: 20 },
+    });
     return response.data;
   },
 
-  getStudentById: async (id: string): Promise<Student> => {
-    const response = await axios.get<Student>(`${API_BASE_URL}/${id}`);
+  createStudent: async (student: Omit<Student, 'id' | 'studentCode'>): Promise<any> => {
+    const response = await axios.post(API_BASE_URL, student);
     return response.data;
   },
 
-  createStudent: async (student: Student): Promise<string> => {
-    const response = await axios.post<string>(API_BASE_URL, student);
+  updateStudent: async (id: string, student: Omit<Student, 'id' | 'studentCode'>): Promise<any> => {
+    const response = await axios.put(`${API_BASE_URL}/${id}`, student);
     return response.data;
   },
 
-  updateStudent: async (id: string, student: Student): Promise<void> => {
-    await axios.put(`${API_BASE_URL}/${id}`, student);
+  deleteStudent: async (id: string): Promise<any> => {
+    const response = await axios.delete(`${API_BASE_URL}/${id}`);
+    return response.data;
   },
 
-  deleteStudent: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/${id}`);
+  exportStudentsUrl: (searchQuery: string) => {
+    return `${API_BASE_URL}/export?searchQuery=${encodeURIComponent(searchQuery)}`;
+  },
+
+  importStudents: async (file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axios.post(`${API_BASE_URL}/import`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      responseType: 'blob', // Để nhận file lỗi nếu import lỗi
+    });
+    return response;
   }
 };
