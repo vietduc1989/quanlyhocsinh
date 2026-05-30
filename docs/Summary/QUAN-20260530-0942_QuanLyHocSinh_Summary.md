@@ -1,23 +1,22 @@
-**Tóm tắt Dự án - QuanLyHocSinh**
+Dưới đây là bản tóm tắt dự án "QuanLyHocSinh" được nén lại, tích hợp thông tin mới từ SRS và SAD:
 
-*   **Module:** "QuanLyHocSinh" trong dự án "quanlyhocsinh".
-    *   **Mô tả:** Cung cấp công cụ toàn diện để quản lý thông tin học sinh, bao gồm CRUD, kiểm tra tính hợp lệ dữ liệu, tìm kiếm và phân trang.
-    *   **Phạm vi:** Quản lý thông tin chi tiết học sinh (CRUD, tìm kiếm, phân trang, validation).
-    *   **Ngoài phạm vi:** Quản lý lớp học, điểm số, lịch học, chuyên cần, tích hợp hệ thống ngoài, quản lý quyền chi tiết (các module/tính năng riêng).
+---
+
+**Tóm tắt Dự án - QuanLyHocSinh (Cập nhật SRS/SAD)**
+
+*   **Module:** "QuanLyHocSinh" (thuộc dự án `quanlyhocsinh`) là module cốt lõi, cung cấp công cụ toàn diện để quản lý thông tin học sinh (CRUD, kiểm tra tính hợp lệ dữ liệu, tìm kiếm, phân trang). Đây là nền tảng cho các module quản lý khác trong tương lai.
 *   **Requirements:**
     *   **Functional:**
-        *   **Data Model:** Thực thể `HocSinh` với các trường như `MaHocSinh` (PK), `HoTen`, `NgaySinh`, `GioiTinh`, `MaLopHoc` (FK), `TrangThai`.
-        *   **CRUD:** Xem danh sách, thêm mới, xem chi tiết, cập nhật, xóa học sinh (ưu tiên Soft Delete). Admin có toàn quyền; Giáo viên chỉ có quyền xem.
-        *   **Tìm kiếm:** Theo Mã học sinh, Họ và tên, Lớp học (chính xác/một phần).
-        *   **Phân trang:** Hỗ trợ điều hướng và chọn số lượng mục/trang.
-        *   **Validation:** Kiểm tra tính hợp lệ dữ liệu chặt chẽ (bắt buộc, duy nhất, định dạng, khoảng giá trị, tồn tại FK) cho từng trường khi nhập/cập nhật.
-    *   **Non-functional:** Hiệu suất (tải danh sách <= 3s, CRUD <= 2s), bảo mật (phân quyền, mã hóa), khả năng sử dụng (UI/UX trực quan, nhất quán), độ tin cậy, khả năng mở rộng, tính bảo trì.
-*   **Constraints:**
-    *   Sử dụng công nghệ/framework được ONENET phê duyệt.
-    *   Tuân thủ quy định bảo vệ dữ liệu cá nhân.
-    *   Thời gian triển khai theo lịch định.
-    *   **Giả định:** Hệ thống AuthN/AuthZ và module Lớp học đã tồn tại hoặc phát triển song song; hạ tầng kỹ thuật đủ mạnh.
+        *   **Data Model:** Thực thể `HocSinh` với các trường chi tiết như `MaHocSinh` (PK), `HoTen`, `NgaySinh`, `GioiTinh`, `DiaChi`, `SoDienThoaiPH`, `EmailPH`, `MaLopHoc` (FK), `TrangThai` (hỗ trợ xóa mềm), cùng các trường audit tự động (`NgayTao`, `NguoiTao`, `NgayCapNhatCuoi`, `NguoiCapNhatCuoi`).
+        *   **CRUD & Phân quyền:** Quản trị viên có toàn quyền CRUD (thêm, xem, sửa, xóa mềm). Giáo viên chỉ có quyền xem danh sách, chi tiết, tìm kiếm và phân trang.
+        *   **Tìm kiếm & Phân trang:** Tìm kiếm theo Mã HS, Họ tên, Lớp học (chính xác/một phần); phân trang linh hoạt (10, 25, 50, 100 mục/trang).
+        *   **Validation:** Kiểm tra dữ liệu chặt chẽ ở cả Client-side và Server-side, bao gồm các ràng buộc về định dạng, khoảng giá trị, duy nhất, và kiểm tra tồn tại `MaLopHoc` qua API của module Lớp học.
+    *   **Non-functional:** Đảm bảo hiệu suất cao (tải danh sách <=3s/1000 bản ghi, thao tác CRUD <=2s, tìm kiếm <=2s), bảo mật (tích hợp AuthN/AuthZ của ONENET, HTTPS, validation đầu vào), khả năng sử dụng (UI/UX trực quan theo chuẩn ONENET), độ tin cậy, khả năng mở rộng (kiến trúc stateless, DB replication), và tính bảo trì (thiết kế modular, tài liệu rõ ràng, clean code).
+*   **Constraints:** Tuân thủ công nghệ/framework của ONENET, quy định bảo vệ dữ liệu cá nhân, và lịch trình dự án.
+    *   **Giả định/Phụ thuộc:** Hệ thống AuthN/AuthZ và module Lớp học của ONENET đã tồn tại hoặc đang phát triển song song, cung cấp API để tra cứu/xác thực `MaLopHoc`; hạ tầng kỹ thuật đủ mạnh.
 *   **Progress:**
-    *   Tài liệu BRD-QUAN-20260530-0942-V1.0 đang ở trạng thái **Bản nháp**.
-    *   **Kế hoạch tiếp theo:** BRD Review, Thiết kế UI/UX, Thiết kế Kỹ thuật, Phát triển, Kiểm thử, Triển khai.
-*   **Known Issues:** Không có vấn đề cụ thể được liệt kê.
+    *   BRD-QUAN-20260530-0942-V1.0 đang ở trạng thái **Bản nháp**.
+    *   **Cập nhật quan trọng:** Tài liệu Yêu cầu Phần mềm (SRS-V1.0) và Tài liệu Kiến trúc Phần mềm (SAD-V1.0) cho tính năng "QuanLyHocSinh" đã được Solution Architect của ONENET lập và hiện đang ở trạng thái **Bản nháp**. SAD chi tiết kiến trúc phân lớp (Frontend, Backend RESTful API, Database), tích hợp với các hệ thống AuthN/AuthZ và Module Lớp học bên ngoài, cùng với kế hoạch triển khai sử dụng Docker/Kubernetes và ngăn xếp công nghệ tiêu chuẩn của ONENET (ví dụ: Spring Boot, PostgreSQL, React/Vue/Angular).
+*   **Known Issues:** Không có vấn đề cụ thể được liệt kê. Cần lưu ý trạng thái "Bản nháp" của BRD, SRS và SAD đòi hỏi các vòng review và phê duyệt tiếp theo.
+
+---
