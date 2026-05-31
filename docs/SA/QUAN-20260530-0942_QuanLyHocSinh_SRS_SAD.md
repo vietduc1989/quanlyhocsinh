@@ -30,7 +30,7 @@ Tính năng "QuanLyHocSinh" sẽ cung cấp các công cụ quản lý toàn di�
 *   **CRUD:** Create, Read, Update, Delete (Tạo, Đọc, Cập nhật, Xóa)
 *   **UI/UX:** User Interface / User Experience (Giao diện Người dùng / Trải nghiệm Người dùng)
 *   **NFR:** Non-Functional Requirement (Yêu cầu Phi chức năng)
-*   **PK:** Primary Key (Khóa chính)
+*   **PK:** PK (Khóa chính)
 *   **FK:** Foreign Key (Khóa ngoại)
 *   **API:** Application Programming Interface
 *   **HTTP:** Hypertext Transfer Protocol
@@ -629,7 +629,7 @@ graph LR
 
 #### 6.1. Thiết kế Cơ sở Dữ liệu
 *   **Học Sinh Table (`HocSinh`):**
-    *   `MaHocSinh` (VARCHAR(20) PK, NOT NULL, UNIQUE)
+    *   `MaHocSinh` (VARCHAR(20) PK, NOT NULL, UK)
     *   `HoTen` (VARCHAR(100) NOT NULL)
     *   `NgaySinh` (DATE NOT NULL)
     *   `GioiTinh` (VARCHAR(10) NOT NULL) - Enum ('Nam', 'Nữ', 'Khác')
@@ -643,7 +643,7 @@ graph LR
     *   `NgayCapNhatCuoi` (TIMESTAMP WITH TIME ZONE)
     *   `NguoiCapNhatCuoi` (VARCHAR(50))
 *   **Chỉ mục:**
-    *   `idx_hocsinh_ma_hocsinh` (UNIQUE) on `MaHocSinh`
+    *   `idx_hocsinh_ma_hocsinh` (UK) on `MaHocSinh`
     *   `idx_hocsinh_ho_ten` on `HoTen`
     *   `idx_hocsinh_ma_lop_hoc` on `MaLopHoc`
     *   `idx_hocsinh_trang_thai` on `TrangThai`
