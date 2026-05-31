@@ -1,0 +1,1 @@
+[ERROR_RATE_LIMIT] [QA] Tất cả model AI đang bị giới hạn tốc độ (Rate Limit 429). Vui lòng thử lại sau vài phút. Chi tiết: Tất cả 2 GoogleAI API Keys đều bị chặn (Rate Limit/Quota).
