@@ -6,7 +6,7 @@
 
 Mọi file code phải tuân theo cấu trúc:
 
-`
+```text
 apps/api/src/          # Backend .NET
 apps/web/src/          # Frontend React
 packages/shared/src/   # Shared DTOs, constants
@@ -14,17 +14,17 @@ tests/                 # Unit & Integration tests
 scripts/               # Build & deploy scripts
 docs/                  # Tài liệu dự án
 .github/workflows/     # CI/CD
-`
+```
 
 ## Output Format
 
 AI Agent CHỈ được trả về code dưới dạng:
 
-`
+```text
 [FILE: <đường_dẫn_tương_đối>]
 <nội dung file>
 [ENDFILE]
-`
+```
 
 - KHÔNG viết giải thích ngoài block
 - KHÔNG dùng markdown code fence

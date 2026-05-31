@@ -20,7 +20,7 @@ Hệ thống quản lý học sinh toàn diện, xây dựng trên nền tảng 
 
 ## Cấu trúc Repo
 
-`
+```text
 project/
 ├── apps/
 │   ├── web/          # Frontend (React)
@@ -33,24 +33,24 @@ project/
 ├── scripts/          # Build, deploy scripts
 ├── tests/            # Integration & E2E tests
 └── .github/workflows # CI/CD pipelines
-`
+```
 
 ## Cài đặt
 
 ### Backend
-`ash
+```bash
 cd apps/api
 dotnet restore
 dotnet ef database update
 dotnet run
-`
+```
 
 ### Frontend
-`ash
+```bash
 cd apps/web
 npm install
 npm run dev
-`
+```
 
 ---
 _Dự án được quản lý bởi ONENET AgentFactory._

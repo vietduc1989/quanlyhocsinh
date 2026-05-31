@@ -36,7 +36,7 @@
 
 - Dùng Result Pattern cho business logic (không throw exception)
 - Global Exception Middleware cho unhandled errors
-- Structured logging: `_logger.LogInformation(""Student created: {StudentId}"", id)`
+- Structured logging: `_logger.LogInformation("Student created: {StudentId}", id)`
 - KHÔNG dùng string interpolation trong log
 
 ## Testing
