@@ -13,11 +13,11 @@
 
 ## Commit Message Convention
 
-`
+```text
 <type>(<scope>): <description>
 
 [optional body]
-`
+```
 
 **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`
 
