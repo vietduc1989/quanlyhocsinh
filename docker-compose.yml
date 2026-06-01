@@ -2,22 +2,21 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432" # Expose for local development/tools, consider removing in production if not needed
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s # Give the DB time to start before checking
+    networks:
+      - app-network
 
   api:
     build:
@@ -27,18 +26,46 @@ services:
     ports:
       - "8080:8080" # Map host port 8080 to container port 8080
     environment:
-      ASPNETCORE_URLS: http://+:8080 # Ensure ASP.NET listens on 8080
-      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASSWORD}
-      # Add other environment variables as needed for your API
+      # These variables will be consumed by the .NET API
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     depends_on:
       db:
-        condition: service_healthy # Ensure DB is healthy before starting API
+        condition: service_healthy # Wait for the database to be healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"] # Assuming a /health endpoint exists
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"] # Assuming a /health endpoint in your API
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 20s # Give the API time to start before checking
+      start_period: 20s # Give the API more time to start up
+    networks:
+      - app-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: always
+    ports:
+      - "3000:80" # Map host port 3000 to container port 80 (Nginx)
+    environment:
+      # This variable will be used by the React app (e.g., in .env.production, or directly in JS)
+      # Ensure your React app can pick this up at runtime if needed,
+      # otherwise it should be baked in during the build stage of the Dockerfile.
+      # For Vite, usually VITE_ prefixed variables are injected.
+      VITE_API_BASE_URL: http://localhost:8080 # For local dev, refer to host directly
+      # In a more advanced setup, for inter-service communication from web to api (if web directly proxies)
+      # VITE_API_BASE_URL: http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy # Wait for the API to be healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   db_data:
