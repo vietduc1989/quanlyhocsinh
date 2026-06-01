@@ -15,9 +15,8 @@ RUN dotnet publish src/ONENET.WebAPI/ONENET.WebAPI.csproj -c $BUILD_CONFIGURATIO
 # Stage 2: Create the final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
-# Create a non-root user for security
-RUN adduser --system --group --no-create-home appuser && chown -R appuser:appuser /app
-USER appuser
+# Use the built-in app user
+USER app
 
 WORKDIR /app
 COPY --from=build /app/publish .
