@@ -3,7 +3,10 @@ using System.Net;
 using FluentValidation;
 using ONENET.Application.Common.Exceptions;
 using ONENET.WebAPI.Common; // For ApiResponse
-using Serilog; // For structured logging
+using Serilog; // For structured logging`r`nusing System.Text.Json;
+using ONENET.Application.Common.Exceptions;
+using ONENET.WebAPI.Common;
+using FluentValidation; // Import FluentValidation's ValidationException
 
 namespace ONENET.WebAPI.Middleware
 {
@@ -35,7 +38,9 @@ namespace ONENET.WebAPI.Middleware
             context.Response.ContentType = "application/json";
             var statusCode = HttpStatusCode.InternalServerError;
             var message = "An unexpected error occurred.";
-            List<ApiError>? errors = null;
+            List<ApiError>? errors = null;`r`n            var response = context.Response;
+            var apiResponse = ApiResponse.Failure("An unexpected error occurred.");
+            var statusCode = HttpStatusCode.InternalServerError;
 
             switch (exception)
             {
@@ -77,7 +82,36 @@ namespace ONENET.WebAPI.Middleware
 
             context.Response.StatusCode = (int)statusCode;
             var response = ApiResponse.Error(message, (int)statusCode, errors);
-            await context.Response.WriteAsJsonAsync(response);
+            await context.Response.WriteAsJsonAsync(response);`r`n                    var validationErrors = validationException.Errors
+                        .Select(error => new ApiError { Field = error.PropertyName, Message = error.ErrorMessage })
+                        .ToList();
+                    apiResponse = ApiResponse.Failure("Một hoặc nhiều lỗi xác thực đã xảy ra.", validationErrors);
+                    _logger.LogWarning(exception, "Validation error occurred: {Message}", exception.Message);
+                    break;
+                case NotFoundException notFoundException:
+                    statusCode = HttpStatusCode.NotFound;
+                    apiResponse = ApiResponse.Failure(notFoundException.Message);
+                    _logger.LogWarning(exception, "Not Found error occurred: {Message}", exception.Message);
+                    break;
+                case UnauthorizedAccessException:
+                    statusCode = HttpStatusCode.Unauthorized;
+                    apiResponse = ApiResponse.Failure("Authentication failed.");
+                    _logger.LogWarning(exception, "Unauthorized access: {Message}", exception.Message);
+                    break;
+                case ForbiddenException: // Assuming a custom ForbiddenException exists in Application.Common.Exceptions
+                    statusCode = HttpStatusCode.Forbidden;
+                    apiResponse = ApiResponse.Failure("You do not have permission to perform this action.");
+                    _logger.LogWarning(exception, "Forbidden access: {Message}", exception.Message);
+                    break;
+                default:
+                    // Log critical errors for unhandled exceptions
+                    _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
+                    apiResponse = ApiResponse.Failure("Đã có lỗi xảy ra, vui lòng thử lại sau.");
+                    break;
+            }
+
+            response.StatusCode = (int)statusCode;
+            await response.WriteAsync(JsonSerializer.Serialize(apiResponse, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         }
     }
 }

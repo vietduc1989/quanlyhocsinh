@@ -4,13 +4,13 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using ONENET.Application.Common.Behaviors; // Assuming ValidationBehavior and LoggingBehavior exist
-using ONENET.Application.Features.Scores.Services;
+using ONENET.Application.Features.Scores.Services;`r`nusing ONENET.Application.Common.Behaviors; // Assuming these exist from guideline
 
 namespace ONENET.Application
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddAutoMapper(Assembly.GetExecutingAssembly()); // If using AutoMapper
@@ -20,7 +20,13 @@ namespace ONENET.Application
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>)); // Add logging behavior
 
             // Register Score-related services
-            services.AddScoped<IScorePermissionService, ScorePermissionService>();
+            services.AddScoped<IScorePermissionService, ScorePermissionService>();`r`n            services.AddAutoMapper(Assembly.GetExecutingAssembly());
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.AddMediatR(cfg => {
+                cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>)); // Assuming LoggingBehavior exists
+            });
 
             return services;
         }

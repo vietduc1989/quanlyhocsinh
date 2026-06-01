@@ -9,33 +9,40 @@ namespace ONENET.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<AuditLog> builder)
         {
-            builder.ToTable("audit_logs"); // snake_case
+            builder.ToTable("audit_log"); // snake_case cho PostgreSQL
 
-            builder.HasKey(a => a.Id);
-            builder.Property(a => a.Id).HasColumnName("id"); // BaseEntity's Id is used.
+            builder.HasKey(x => x.Id);
+            builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
 
-            builder.Property(a => a.EntityType).HasColumnName("entity_type").HasMaxLength(50).IsRequired();
-            builder.Property(a => a.EntityId).HasColumnName("entity_id").IsRequired();
-            builder.Property(a => a.Action).HasColumnName("action").HasMaxLength(50).IsRequired();
-            
-            // Use jsonb for PostgreSQL for JSON columns
-            builder.Property(a => a.OldValues).HasColumnName("old_values").HasColumnType("jsonb").IsRequired(false);
-            builder.Property(a => a.NewValues).HasColumnName("new_values").HasColumnType("jsonb").IsRequired(false);
-            
-            builder.Property(a => a.Actor).HasColumnName("actor").HasMaxLength(255).IsRequired();
-            builder.Property(a => a.Timestamp).HasColumnName("timestamp").IsRequired();
+            builder.Property(x => x.UserName)
+                .HasColumnName("user_name")
+                .HasMaxLength(100)
+                .IsRequired();
 
-            // Indexes for querying audit logs
-            builder.HasIndex(a => new { a.EntityType, a.EntityId }).HasDatabaseName("ix_audit_logs_entity_type_entity_id");
-            builder.HasIndex(a => a.Actor).HasDatabaseName("ix_audit_logs_actor");
-            builder.HasIndex(a => a.Timestamp).HasDatabaseName("ix_audit_logs_timestamp");
+            builder.Property(x => x.Timestamp)
+                .HasColumnName("timestamp")
+                .IsRequired();
+            builder.HasIndex(x => x.Timestamp).IsDescending().HasDatabaseName("ix_auditlogs_timestamp");
 
-            // Exclude BaseEntity audit fields as AuditLog has its own Timestamp and Actor
-            builder.Ignore(a => a.CreatedAt);
-            builder.Ignore(a => a.CreatedBy);
-            builder.Ignore(a => a.UpdatedAt);
-            builder.Ignore(a => a.UpdatedBy);
-            builder.Ignore(a => a.IsDeleted);
+            builder.Property(x => x.ActionType)
+                .HasColumnName("action_type")
+                .HasMaxLength(50)
+                .IsRequired();
+
+            builder.Property(x => x.EntityName)
+                .HasColumnName("entity_name")
+                .HasMaxLength(100)
+                .IsRequired();
+
+            builder.Property(x => x.EntityId)
+                .HasColumnName("entity_id")
+                .IsRequired();
+            builder.HasIndex(x => x.EntityId).HasDatabaseName("ix_auditlogs_entity_id");
+
+            builder.Property(x => x.Changes)
+                .HasColumnName("changes")
+                .HasColumnType("jsonb") // PostgreSQL JSONB type
+                .IsRequired();
         }
     }
 }

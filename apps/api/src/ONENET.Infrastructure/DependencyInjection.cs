@@ -9,14 +9,15 @@ using ONENET.Infrastructure.Persistence;
 using ONENET.Infrastructure.Persistence.Repositories;
 using ONENET.Infrastructure.Services;
 using ONENET.Application.Features.Scores.Services; // For IScorePermissionService
-using ONENET.Application; // For IUnitOfWork
+using ONENET.Application; // For IUnitOfWork`r`nusing ONENET.Infrastructure.Services; // Add for AuditService
 
 namespace ONENET.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))); // For migrations
@@ -39,7 +40,16 @@ namespace ONENET.Infrastructure
 
             // Register domain/application services
             services.AddScoped<IAuditLogService, AuditLogService>();
-            services.AddScoped<IScorePermissionService, ScorePermissionService>(); // Concrete implementation
+            services.AddScoped<IScorePermissionService, ScorePermissionService>(); // Concrete implementation`r`n                options.UseNpgsql(connectionString,
+                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+
+            services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AppDbContext>()); // AppDbContext implements IUnitOfWork
+            services.AddScoped<ISubjectRepository, SubjectRepository>();
+            services.AddScoped<IAuditService, AuditService>(); // Register AuditService
+
+            // Assume a default implementation for ICurrentUser or it comes from WebAPI
+            // If ICurrentUser needs a concrete implementation here for testing or specific scenarios
+            // For now, assuming it's correctly provided by WebAPI layer or a common project.
 
             return services;
         }

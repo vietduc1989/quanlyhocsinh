@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ONENET.Application.Common.Interfaces; // For IAppDbContext
 using ONENET.Domain.Entities;
-using ONENET.Domain.Common; // For BaseEntity
+using ONENET.Domain.Common; // For BaseEntity`r`nusing System.Reflection;
 
 namespace ONENET.Infrastructure.Persistence
 {
@@ -19,7 +19,7 @@ namespace ONENET.Infrastructure.Persistence
         public DbSet<Score> Scores => Set<Score>();
         public DbSet<Student> Students => Set<Student>();
         public DbSet<Subject> Subjects => Set<Subject>();
-        public DbSet<Semester> Semesters => Set<Semester>();
+        public DbSet<Semester> Semesters => Set<Semester>();`r`n        public DbSet<Subject> Subjects => Set<Subject>();
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,7 +35,12 @@ namespace ONENET.Infrastructure.Persistence
                 }
             }
 
-            base.OnModelCreating(modelBuilder);
+            base.OnModelCreating(modelBuilder);`r`n            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            // Global Query Filter for soft delete as per guideline
+            builder.Entity<Subject>().HasQueryFilter(s => !s.IsDeleted);
+
+            base.OnModelCreating(builder);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -45,7 +50,7 @@ namespace ONENET.Infrastructure.Persistence
                 switch (entry.State)
                 {
                     case EntityState.Added:
-                        entry.Entity.CreatedBy = _currentUser.UserName ?? "System";
+                        entry.Entity.CreatedBy = _currentUser.UserName ?? "System";`r`n                        entry.Entity.CreatedBy = _currentUser.UserName ?? "system_user";
                         entry.Entity.CreatedAt = DateTime.UtcNow;
                         entry.Entity.IsDeleted = false;
                         break;
@@ -67,7 +72,11 @@ namespace ONENET.Infrastructure.Persistence
                         break;
                 }
             }
-
+`r`n                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "system_user";
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        break;
+                }
+            }
             return await base.SaveChangesAsync(cancellationToken);
         }
     }
