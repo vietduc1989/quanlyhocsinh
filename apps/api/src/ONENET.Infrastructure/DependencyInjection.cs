@@ -18,6 +18,7 @@ namespace ONENET.Infrastructure
                     b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<AppDbContext>());
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>)); // Generic repository
             services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<ILopRepository, LopRepository>();

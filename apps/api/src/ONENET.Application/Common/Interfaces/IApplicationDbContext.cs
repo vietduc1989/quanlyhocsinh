@@ -8,10 +8,9 @@ namespace ONENET.Application.Common.Interfaces
     public interface IApplicationDbContext
     {
         DbSet<Student> Students { get; }
-        DbSet<Class> Classes { get; }
-        DbSet<Subject> Subjects { get; }
-        DbSet<Score> Scores { get; }
-        DbSet<Teacher> Teachers { get; }
+        DbSet<AuditLog> AuditLogs { get; }
+        DbSet<Lop> Lops { get; }
+        DbSet<TrangThaiHocSinh> TrangThaiHocSinhs { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

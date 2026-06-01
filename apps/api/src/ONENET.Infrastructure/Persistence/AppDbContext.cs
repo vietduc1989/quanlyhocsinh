@@ -8,7 +8,7 @@ using ONENET.Domain.Entities;
 
 namespace ONENET.Infrastructure.Persistence
 {
-    public class AppDbContext : DbContext, IUnitOfWork
+    public class AppDbContext : DbContext, IUnitOfWork, IApplicationDbContext
     {
         private readonly ICurrentUser _currentUser;
 
