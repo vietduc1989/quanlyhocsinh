@@ -1,4 +1,17 @@
-// QUAN-20260531-154643
+// QUAN-20260530-2302
+// Assume AppDbContext.cs already exists, adding DbSet<Class>
+using Microsoft.EntityFrameworkCore;
+using ONENET.Application.Common.Interfaces;
+using ONENET.Domain.Entities;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace ONENET.Infrastructure.Persistence
+{
+    public class AppDbContext : DbContext, IApplicationDbContext
+    {
+        private readonly ICurrentUser _currentUser; // For BaseAuditableEntity`r`n// QUAN-20260531-154643
 using Microsoft.EntityFrameworkCore;
 using ONENET.Application.Common.Interfaces; // For IAppDbContext
 using ONENET.Domain.Entities;
@@ -16,7 +29,13 @@ namespace ONENET.Infrastructure.Persistence
             _currentUser = currentUser;
         }
 
-        public DbSet<Score> Scores => Set<Score>();
+        public DbSet<Class> Classes { get; set; }
+        public DbSet<Student> Students { get; set; } // Assume exists
+        public DbSet<Teacher> Teachers { get; set; } // Assume exists
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())`r`n        public DbSet<Score> Scores => Set<Score>();
         public DbSet<Student> Students => Set<Student>();
         public DbSet<Subject> Subjects => Set<Subject>();
         public DbSet<Semester> Semesters => Set<Semester>();`r`n        public DbSet<Subject> Subjects => Set<Subject>();
@@ -70,9 +89,28 @@ namespace ONENET.Infrastructure.Persistence
                             entry.Entity.UpdatedAt = DateTime.UtcNow;
                         }
                         break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified; // Perform soft delete
+                        entry.Entity.IsDeleted = true;
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        entry.Entity.UpdatedBy = _currentUser.UserId;
+                        break;
                 }
             }
-`r`n                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "system_user";
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            // Add global query filter for soft delete
+            modelBuilder.Entity<Class>().HasQueryFilter(c => !c.IsDeleted);
+            modelBuilder.Entity<Student>().HasQueryFilter(s => !s.IsDeleted);
+            modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
+
+            base.OnModelCreating(modelBuilder);`r`n`r`n                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "system_user";
                         entry.Entity.UpdatedAt = DateTime.UtcNow;
                         break;
                 }

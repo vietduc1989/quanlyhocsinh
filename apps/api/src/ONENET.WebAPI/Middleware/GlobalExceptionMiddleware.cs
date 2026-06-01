@@ -1,4 +1,16 @@
-// QUAN-20260531-154643
+// QUAN-20260530-2302
+// Assume GlobalExceptionMiddleware.cs already exists, modifying to handle new exceptions.
+using FluentValidation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using ONENET.Application.Common.Exceptions;
+using ONENET.WebAPI.Models;
+using Serilog.Context;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text.Json;
+using System.Threading.Tasks;`r`n// QUAN-20260531-154643
 using System.Net;
 using FluentValidation;
 using ONENET.Application.Common.Exceptions;
@@ -35,16 +47,59 @@ namespace ONENET.WebAPI.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
+            var httpStatusCode = HttpStatusCode.InternalServerError;
+            var response = new ApiResponse { Success = false };`r`n            context.Response.ContentType = "application/json";
             var statusCode = HttpStatusCode.InternalServerError;
             var message = "An unexpected error occurred.";
             List<ApiError>? errors = null;`r`n            var response = context.Response;
             var apiResponse = ApiResponse.Failure("An unexpected error occurred.");
             var statusCode = HttpStatusCode.InternalServerError;
 
-            switch (exception)
+            using (LogContext.PushProperty("ExceptionType", exception.GetType().Name))
+            using (LogContext.PushProperty("ErrorMessage", exception.Message))
             {
-                case ValidationException validationException:
+                switch (exception)
+                {
+                    case ValidationException validationException:
+                        httpStatusCode = HttpStatusCode.BadRequest;
+                        response.Message = "Validation Error";
+                        response.Errors = new List<ApiError>();
+                        foreach (var error in validationException.Errors)
+                        {
+                            response.Errors.Add(new ApiError { Field = error.PropertyName, Message = error.ErrorMessage });
+                        }
+                        _logger.LogWarning(validationException, "Validation exception occurred for request {Path}", context.Request.Path);
+                        break;
+                    case NotFoundException notFoundException:
+                        httpStatusCode = HttpStatusCode.NotFound;
+                        response.Message = notFoundException.Message;
+                        _logger.LogWarning(notFoundException, "Not Found exception occurred for request {Path}", context.Request.Path);
+                        break;
+                    case BusinessRuleException businessRuleException:
+                        httpStatusCode = HttpStatusCode.Conflict; // 409 Conflict for business rule violations
+                        response.Message = businessRuleException.Message;
+                        _logger.LogWarning(businessRuleException, "Business Rule exception occurred for request {Path}", context.Request.Path);
+                        break;
+                    case UnauthorizedAccessException:
+                        httpStatusCode = HttpStatusCode.Forbidden; // 403 Forbidden
+                        response.Message = "Access Denied.";
+                        _logger.LogWarning(exception, "Unauthorized access attempt for request {Path}", context.Request.Path);
+                        break;
+                    case DbUpdateConcurrencyException concurrencyException:
+                        httpStatusCode = HttpStatusCode.Conflict;
+                        response.Message = "Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng thử lại.";
+                        _logger.LogWarning(concurrencyException, "Concurrency conflict detected for request {Path}", context.Request.Path);
+                        break;
+                    default:
+                        response.Message = "An unexpected error occurred.";
+                        _logger.LogError(exception, "Unhandled exception occurred for request {Path}", context.Request.Path);
+                        break;
+                }
+            }
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)httpStatusCode;
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));`r`n                case ValidationException validationException:
                     statusCode = HttpStatusCode.BadRequest;
                     message = "Validation failed.";
                     errors = validationException.Errors
