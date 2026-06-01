@@ -1,11 +1,9 @@
-// QUAN-20260530-2301
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using ONENET.Application.Common.Exceptions;
-using ONENET.WebAPI.Models;
-using System;
+// QUAN-20260531-154643
+using System.Net;
 using System.Text.Json;
-using System.Threading.Tasks;
+using ONENET.Application.Common.Exceptions;
+using ONENET.WebAPI.Common;
+using FluentValidation; // Import FluentValidation's ValidationException
 
 namespace ONENET.WebAPI.Middleware
 {
@@ -20,60 +18,59 @@ namespace ONENET.WebAPI.Middleware
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
             try
             {
-                await _next(context);
+                await _next(httpContext);
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(context, ex);
+                await HandleExceptionAsync(httpContext, ex);
             }
         }
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";
-            var response = ApiResponse.Error("Đã xảy ra lỗi không mong muốn.");
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var response = context.Response;
+            var apiResponse = ApiResponse.Failure("An unexpected error occurred.");
+            var statusCode = HttpStatusCode.InternalServerError;
 
             switch (exception)
             {
                 case ValidationException validationException:
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    response = ApiResponse.Error(
-                        "Validation Error",
-                        new System.Collections.Generic.List<ApiError>(
-                            validationException.Errors.Select(e => new ApiError(e.Key, e.Value.First()))
-                        ));
-                    _logger.LogWarning(validationException, "Validation failed: {Message}", validationException.Message);
+                    statusCode = HttpStatusCode.BadRequest;
+                    var validationErrors = validationException.Errors
+                        .Select(error => new ApiError { Field = error.PropertyName, Message = error.ErrorMessage })
+                        .ToList();
+                    apiResponse = ApiResponse.Failure("Một hoặc nhiều lỗi xác thực đã xảy ra.", validationErrors);
+                    _logger.LogWarning(exception, "Validation error occurred: {Message}", exception.Message);
                     break;
                 case NotFoundException notFoundException:
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
-                    response = ApiResponse.Error(notFoundException.Message);
-                    _logger.LogWarning(notFoundException, "Resource not found: {Message}", notFoundException.Message);
+                    statusCode = HttpStatusCode.NotFound;
+                    apiResponse = ApiResponse.Failure(notFoundException.Message);
+                    _logger.LogWarning(exception, "Not Found error occurred: {Message}", exception.Message);
                     break;
-                case ConflictException conflictException:
-                    context.Response.StatusCode = StatusCodes.Status409Conflict;
-                    response = ApiResponse.Error(
-                        conflictException.Message,
-                        conflictException.ErrorCode ?? "CONFLICT",
-                        conflictException.Message,
-                        conflictException.ConflictDetails
-                    );
-                    _logger.LogWarning(conflictException, "Conflict occurred: {Message}", conflictException.Message);
+                case UnauthorizedAccessException:
+                    statusCode = HttpStatusCode.Unauthorized;
+                    apiResponse = ApiResponse.Failure("Authentication failed.");
+                    _logger.LogWarning(exception, "Unauthorized access: {Message}", exception.Message);
                     break;
-                // Add more specific exceptions here (e.g., ForbiddenException, UnauthorizedException)
+                case ForbiddenException: // Assuming a custom ForbiddenException exists in Application.Common.Exceptions
+                    statusCode = HttpStatusCode.Forbidden;
+                    apiResponse = ApiResponse.Failure("You do not have permission to perform this action.");
+                    _logger.LogWarning(exception, "Forbidden access: {Message}", exception.Message);
+                    break;
                 default:
+                    // Log critical errors for unhandled exceptions
                     _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
-                    // For generic 500 errors, avoid exposing sensitive details.
-                    response = ApiResponse.Error("Đã xảy ra lỗi nội bộ. Vui lòng thử lại sau.");
+                    apiResponse = ApiResponse.Failure("Đã có lỗi xảy ra, vui lòng thử lại sau.");
                     break;
             }
 
-            var result = JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await context.Response.WriteAsync(result);
+            response.StatusCode = (int)statusCode;
+            await response.WriteAsync(JsonSerializer.Serialize(apiResponse, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         }
     }
 }

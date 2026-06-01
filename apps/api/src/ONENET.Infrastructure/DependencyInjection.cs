@@ -1,4 +1,4 @@
-// QUAN-20260530-2301
+// QUAN-20260531-154643
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,32 +6,26 @@ using ONENET.Application.Common.Interfaces;
 using ONENET.Domain.Interfaces;
 using ONENET.Infrastructure.Persistence;
 using ONENET.Infrastructure.Persistence.Repositories;
-using ONENET.Infrastructure.Services; // Assuming CurrentUserService might be here
+using ONENET.Infrastructure.Services; // Add for AuditService
 
 namespace ONENET.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
+                options.UseNpgsql(connectionString,
                     b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
-            services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AppDbContext>());
+            services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AppDbContext>()); // AppDbContext implements IUnitOfWork
+            services.AddScoped<ISubjectRepository, SubjectRepository>();
+            services.AddScoped<IAuditService, AuditService>(); // Register AuditService
 
-            // Register repositories
-            services.AddScoped<IStudentRepository, StudentRepository>();
-            services.AddScoped<ILopRepository, LopRepository>();
-            services.AddScoped<ITrangThaiHocSinhRepository, TrangThaiHocSinhRepository>();
-
-            // Register ICurrentUser service (assuming implementation in Infrastructure/Services)
-            // If ICurrentUser is already registered elsewhere (e.g., WebAPI for HttpContext access),
-            // this line might not be needed or would be a specific implementation.
-            // For this task, we will assume a basic HttpContextAccessor-based implementation
-            // exists in Infrastructure/Services or is provided by the WebAPI layer.
-            // For now, let's just make sure it's accessible.
-            // services.AddScoped<ICurrentUser, CurrentUserService>(); // Example if CurrentUserService is in Infrastructure
+            // Assume a default implementation for ICurrentUser or it comes from WebAPI
+            // If ICurrentUser needs a concrete implementation here for testing or specific scenarios
+            // For now, assuming it's correctly provided by WebAPI layer or a common project.
 
             return services;
         }

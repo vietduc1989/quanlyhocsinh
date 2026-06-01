@@ -1,12 +1,9 @@
-// QUAN-20260530-2301
+// QUAN-20260531-154643
 using Microsoft.EntityFrameworkCore;
 using ONENET.Application.Common.Interfaces;
 using ONENET.Domain.Common;
 using ONENET.Domain.Entities;
-using System;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ONENET.Infrastructure.Persistence
 {
@@ -20,37 +17,37 @@ namespace ONENET.Infrastructure.Persistence
             _currentUser = currentUser;
         }
 
-        // Add new DbSets for Student management
-        public DbSet<Student> Students => Set<Student>();
-        public DbSet<Lop> Lops => Set<Lop>();
-        public DbSet<TrangThaiHocSinh> TrangThaiHocSinhs => Set<TrangThaiHocSinh>();
+        public DbSet<Subject> Subjects => Set<Subject>();
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            // Apply configurations for entities in this assembly
             builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            // Global Query Filter for soft delete as per guideline
+            builder.Entity<Subject>().HasQueryFilter(s => !s.IsDeleted);
 
             base.OnModelCreating(builder);
         }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())
             {
                 switch (entry.State)
                 {
                     case EntityState.Added:
+                        entry.Entity.CreatedBy = _currentUser.UserName ?? "system_user";
                         entry.Entity.CreatedAt = DateTime.UtcNow;
-                        entry.Entity.CreatedBy = _currentUser.UserId;
+                        entry.Entity.IsDeleted = false;
                         break;
                     case EntityState.Modified:
+                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "system_user";
                         entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        entry.Entity.UpdatedBy = _currentUser.UserId;
                         break;
                 }
             }
-
-            return await base.SaveChangesAsync(ct);
+            return await base.SaveChangesAsync(cancellationToken);
         }
     }
 }
