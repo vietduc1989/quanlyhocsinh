@@ -1,14 +1,21 @@
+<!-- QUAN-20260530-2301 -->
 <Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ONENET.WebAPI</RootNamespace>
+    <AssemblyName>ONENET.WebAPI</AssemblyName>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0-preview*" />
-  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ONENET.Application\ONENET.Application.csproj" />
     <ProjectReference Include="..\ONENET.Infrastructure\ONENET.Infrastructure.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-preview.3.24174.15" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0-preview.3.24172.13" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+  </ItemGroup>
+
 </Project>

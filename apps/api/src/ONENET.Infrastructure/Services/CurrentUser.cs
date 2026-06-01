@@ -1,12 +1,10 @@
-// QUAN-20260531-154643
-using Microsoft.AspNetCore.Http;
+<!-- QUAN-20260530-2301 -->
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using ONENET.Application.Common.Interfaces;
 
 namespace ONENET.Infrastructure.Services
 {
-    // A concrete implementation of ICurrentUser.
-    // In a real application, this would pull user info from HttpContext.User.
     public class CurrentUser : ICurrentUser
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

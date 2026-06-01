@@ -1,23 +1,15 @@
-// QUAN-20260530-2301
-using ONENET.Domain.Common;
-using System;
+<!-- QUAN-20260530-2301 -->
 using System.Collections.Generic;
+using ONENET.Domain.Common;
 
 namespace ONENET.Domain.Entities
 {
     public class TrangThaiHocSinh : BaseEntity
     {
-        public string MaTrangThai { get; private set; } = default!;
-        public string TenTrangThai { get; private set; } = default!;
-        public string? MoTa { get; private set; }
+        public string MaTrangThai { get; set; } = string.Empty;
+        public string TenTrangThai { get; set; } = string.Empty;
+        public string? MoTa { get; set; }
 
-        public ICollection<Student> Students { get; private set; } = new HashSet<Student>(); // Navigation property
-
-        private TrangThaiHocSinh() { } // Private constructor for EF Core
-
-        public static TrangThaiHocSinh Create(string maTrangThai, string tenTrangThai, string? moTa)
-        {
-            return new TrangThaiHocSinh { MaTrangThai = maTrangThai, TenTrangThai = tenTrangThai, MoTa = moTa };
-        }
+        public ICollection<Student> Students { get; set; } = new HashSet<Student>();
     }
 }

@@ -1,56 +1,109 @@
-// QUAN-20260530-2302
-// Assume StudentConfiguration.cs already exists, adding FK to Class`r`n// QUAN-20260531-154643
+<!-- QUAN-20260530-2301 -->
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ONENET.Domain.Entities;
+using ONENET.Domain.Enums;
 
 namespace ONENET.Infrastructure.Persistence.Configurations
 {
-    // Minimal configuration for external Student entity to support FKs and queries
     public class StudentConfiguration : IEntityTypeConfiguration<Student>
     {
         public void Configure(EntityTypeBuilder<Student> builder)
         {
-            builder.ToTable("students"); // Example table name
+            builder.ToTable("students");
 
             builder.HasKey(s => s.Id);
-
-            builder.Property(s => s.FullName)
-                .HasColumnName("full_name")
-                .HasMaxLength(100)
+            builder.Property(s => s.Id)
+                .HasColumnName("id")
+                .HasColumnType("uuid")
                 .IsRequired();
 
-            builder.Property(s => s.ClassId)
-                .HasColumnName("class_id")
-                .IsRequired(false); // Nullable FK
+            builder.Property(s => s.MaHocSinh)
+                .HasColumnName("ma_hoc_sinh")
+                .HasMaxLength(20)
+                .IsRequired();
+            builder.HasIndex(s => s.MaHocSinh).IsUnique(); // Unique Index
 
-            // BaseAuditableEntity properties
-            builder.Property(s => s.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.Property(s => s.CreatedBy).HasColumnName("created_by").HasMaxLength(256);
-            builder.Property(s => s.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(s => s.UpdatedBy).HasColumnName("updated_by").HasMaxLength(256);
-            builder.Property(s => s.IsDeleted).HasColumnName("is_deleted").IsRequired();
+            builder.Property(s => s.HoVaTen)
+                .HasColumnName("ho_va_ten")
+                .HasMaxLength(100)
+                .IsRequired();
+            builder.HasIndex(s => s.HoVaTen); // Index for searching/sorting
 
-            // Relationships
-            builder.HasOne(s => s.Class)
-                .WithMany(c => c.Students)
-                .HasForeignKey(s => s.ClassId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent deleting a class that has students
-            
-            builder.HasIndex(s => s.ClassId); // Index for efficient lookups`r`n            builder.ToTable("students"); // Assumed external table name
+            builder.Property(s => s.NgaySinh)
+                .HasColumnName("ngay_sinh")
+                .HasColumnType("date")
+                .IsRequired();
 
-            builder.HasKey(s => s.Id);
-            builder.Property(s => s.Id).HasColumnName("id");
-            builder.Property(s => s.Code).HasColumnName("code").HasMaxLength(20).IsRequired();
-            builder.HasIndex(s => s.Code).IsUnique().HasDatabaseName("ix_students_code");
-            builder.Property(s => s.FullName).HasColumnName("full_name").HasMaxLength(255).IsRequired();
+            builder.Property(s => s.GioiTinh)
+                .HasColumnName("gioi_tinh")
+                .HasConversion<string>() // Store enum as string
+                .HasMaxLength(10)
+                .IsRequired();
 
-            // BaseEntity audit fields
-            builder.Property(s => s.CreatedAt).HasColumnName("created_at");
-            builder.Property(s => s.CreatedBy).HasColumnName("created_by");
-            builder.Property(s => s.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(s => s.UpdatedBy).HasColumnName("updated_by");
-            builder.Property(s => s.IsDeleted).HasColumnName("is_deleted");
+            builder.Property(s => s.DiaChi)
+                .HasColumnName("dia_chi")
+                .HasMaxLength(255);
+
+            builder.Property(s => s.SdtPhuHuynh)
+                .HasColumnName("sdt_phu_huynh")
+                .HasMaxLength(20);
+
+            builder.Property(s => s.EmailPhuHuynh)
+                .HasColumnName("email_phu_huynh")
+                .HasMaxLength(100);
+
+            builder.Property(s => s.LopId)
+                .HasColumnName("lop_id")
+                .HasColumnType("uuid")
+                .IsRequired();
+            builder.HasIndex(s => s.LopId); // FK Index
+
+            builder.HasOne(s => s.Lop)
+                .WithMany(l => l.Students)
+                .HasForeignKey(s => s.LopId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete if related data exists, default is no action
+
+            builder.Property(s => s.NgayNhapHoc)
+                .HasColumnName("ngay_nhap_hoc")
+                .HasColumnType("date")
+                .IsRequired();
+
+            builder.Property(s => s.TrangThaiId)
+                .HasColumnName("trang_thai_id")
+                .HasColumnType("uuid")
+                .IsRequired();
+            builder.HasIndex(s => s.TrangThaiId); // FK Index
+
+            builder.HasOne(s => s.TrangThai)
+                .WithMany(t => t.Students)
+                .HasForeignKey(s => s.TrangThaiId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(s => s.CreatedAt)
+                .HasColumnName("ngay_tao")
+                .IsRequired();
+
+            builder.Property(s => s.CreatedBy)
+                .HasColumnName("nguoi_tao")
+                .HasMaxLength(50);
+
+            builder.Property(s => s.UpdatedAt)
+                .HasColumnName("ngay_cap_nhat");
+
+            builder.Property(s => s.UpdatedBy)
+                .HasColumnName("nguoi_cap_nhat")
+                .HasMaxLength(50);
+
+            builder.Property(s => s.IsDeleted)
+                .HasColumnName("is_deleted")
+                .IsRequired();
+
+            // Concurrency control using xmin for PostgreSQL
+            builder.Property(s => s.RowVersion)
+                .HasColumnName("row_version")
+                .IsConcurrencyToken()
+                .UseXminAsConcurrencyToken(); // Uses PostgreSQL's xmin column
         }
     }
 }

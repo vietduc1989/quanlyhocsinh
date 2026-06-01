@@ -1,23 +1,13 @@
-// QUAN-20260530-2301
-using ONENET.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+<!-- QUAN-20260530-2301 -->
 using System.Threading;
 using System.Threading.Tasks;
+using ONENET.Domain.Entities;
 
 namespace ONENET.Domain.Interfaces
 {
-    public interface IStudentRepository
+    public interface IStudentRepository : IRepository<Student>
     {
-        Task<Student?> GetByIdAsync(Guid id, CancellationToken ct = default);
-        IQueryable<Student> GetAll();
-        Task AddAsync(Student student, CancellationToken ct = default);
-        void Update(Student student);
-        void Delete(Student student);
-        Task<bool> ExistsByMaHocSinhAsync(string maHocSinh, Guid? excludeId = null, CancellationToken ct = default);
-        
-        // QUAN-20260530-2301-FR06: Check for related data
+        Task<bool> IsMaHocSinhUniqueAsync(string maHocSinh, Guid? studentId = null, CancellationToken ct = default);
         Task<bool> HasRelatedDataAsync(Guid studentId, CancellationToken ct = default);
     }
 }

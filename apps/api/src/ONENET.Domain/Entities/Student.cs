@@ -1,48 +1,85 @@
-// QUAN-20260530-2302
-// Assume Student.cs already exists, adding ClassId and Class navigation property
+<!-- QUAN-20260530-2301 -->
+using System;
 using ONENET.Domain.Common;
+using ONENET.Domain.Enums;
 
 namespace ONENET.Domain.Entities
 {
-    public class Student : BaseAuditableEntity
-    {
-        public string FullName { get; private set; }
-        // ... other student properties ...
-
-        public Guid? ClassId { get; private set; } // Foreign key to Class (nullable)
-
-        // Navigation property
-        public Class? Class { get; private set; }
-
-        private Student() { }
-
-        // Assuming existing factory/update methods. Adding a constructor for example.
-        public Student(string fullName, Guid? classId, string createdBy)
-        {
-            FullName = fullName;
-            ClassId = classId;
-            CreatedBy = createdBy;
-            CreatedAt = DateTime.UtcNow;
-        }
-
-        public void AssignClass(Guid? classId, string updatedBy)
-        {
-            ClassId = classId;
-            UpdatedBy = updatedBy;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        // ... existing methods to update student details ...`r`n// QUAN-20260531-154643
-namespace ONENET.Domain.Entities
-{
-    // Placeholder entity for Student, assumed to exist externally.
-    // Inherits BaseEntity to conform to system conventions and allow FK relations.
     public class Student : BaseEntity
     {
-        public string Code { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
+        public string MaHocSinh { get; set; } = string.Empty;
+        public string HoVaTen { get; set; } = string.Empty;
+        public DateTime NgaySinh { get; set; } // Stored as DATE
+        public GioiTinh GioiTinh { get; set; }
+        public string? DiaChi { get; set; }
+        public string? SdtPhuHuynh { get; set; }
+        public string? EmailPhuHuynh { get; set; }
+        public Guid LopId { get; set; }
+        public Lop Lop { get; set; } = default!;
+        public DateTime NgayNhapHoc { get; set; } // Stored as DATE
+        public Guid TrangThaiId { get; set; }
+        public TrangThaiHocSinh TrangThai { get; set; } = default!;
 
-        // Navigation property for Scores (optional, but good for completeness)
-        // public ICollection<Score> Scores { get; private set; } = new List<Score>();
+        // For Concurrency Control (xmin in PostgreSQL)
+        public uint RowVersion { get; set; }
+
+        public static Student Create(
+            string maHocSinh,
+            string hoVaTen,
+            DateTime ngaySinh,
+            GioiTinh gioiTinh,
+            string? diaChi,
+            string? sdtPhuHuynh,
+            string? emailPhuHuynh,
+            Guid lopId,
+            DateTime ngayNhapHoc,
+            Guid trangThaiId,
+            string createdBy)
+        {
+            return new Student
+            {
+                MaHocSinh = maHocSinh,
+                HoVaTen = hoVaTen,
+                NgaySinh = ngaySinh.Date,
+                GioiTinh = gioiTinh,
+                DiaChi = diaChi,
+                SdtPhuHuynh = sdtPhuHuynh,
+                EmailPhuHuynh = emailPhuHuynh,
+                LopId = lopId,
+                NgayNhapHoc = ngayNhapHoc.Date,
+                TrangThaiId = trangThaiId,
+                CreatedBy = createdBy,
+                UpdatedAt = DateTime.UtcNow, // Initial update time
+                UpdatedBy = createdBy // Initial update user
+            };
+        }
+
+        public void Update(
+            string? maHocSinh,
+            string? hoVaTen,
+            DateTime? ngaySinh,
+            GioiTinh? gioiTinh,
+            string? diaChi,
+            string? sdtPhuHuynh,
+            string? emailPhuHuynh,
+            Guid? lopId,
+            DateTime? ngayNhapHoc,
+            Guid? trangThaiId,
+            string updatedBy)
+        {
+            MaHocSinh = maHocSinh ?? MaHocSinh;
+            HoVaTen = hoVaTen ?? HoVaTen;
+            NgaySinh = ngaySinh?.Date ?? NgaySinh;
+            GioiTinh = gioiTinh ?? GioiTinh;
+            DiaChi = diaChi ?? DiaChi;
+            SdtPhuHuynh = sdtPhuHuynh ?? SdtPhuHuynh;
+            EmailPhuHuynh = emailPhuHuynh ?? EmailPhuHuynh;
+            LopId = lopId ?? LopId;
+            NgayNhapHoc = ngayNhapHoc?.Date ?? NgayNhapHoc;
+            TrangThaiId = trangThaiId ?? TrangThaiId;
+
+            UpdatedAt = DateTime.UtcNow;
+            UpdatedBy = updatedBy;
+        }
     }
 }
