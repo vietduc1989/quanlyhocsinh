@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 import { useQuery } from '@tanstack/react-query';
 import { getStudentById } from '../api/studentApi';
 import type { StudentDetail } from '../types/common';

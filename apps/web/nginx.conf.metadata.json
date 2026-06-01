@@ -1,0 +1,5 @@
+{
+  "artifactType":  "ARTIFACT_TYPE_OTHER",
+  "summary":  "Fix nginx.conf git conflict and use correct server block",
+  "updatedAt":  "2026-06-01T07:25:32.789815200Z"
+}

@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 import { useParams } from 'react-router-dom';
 import { Container, Title, Text, Card, Group, Badge, Loader, Center } from '@mantine/core';
 import { useStudentDetail } from '../../hooks/useStudentDetail';

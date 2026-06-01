@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 import { axiosInstance } from './axiosInstance';
 import type {
   ApiResponse,

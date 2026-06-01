@@ -1,6 +1,6 @@
-<!-- QUAN-20260530-2301 -->
 import { useEffect } from 'react';
-import { Modal, TextInput, Select, Button, Group, Box, Text, DateInput } from '@mantine/core';
+import { Modal, TextInput, Select, Button, Group, Box, Text } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { useForm, zodResolver } from '@mantine/form';
 import { z } from 'zod';
 import dayjs from 'dayjs';

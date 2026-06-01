@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 import { useQuery } from '@tanstack/react-query';
 import { getStudents } from '../api/studentApi';
 import type { PagedResult, Student } from '../types/common';
