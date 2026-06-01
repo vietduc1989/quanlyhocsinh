@@ -1,4 +1,3 @@
-// QUAN-20260531-154643
 using ONENET.Domain.Common; // Assuming BaseValueObject or similar base is in Common
 
 namespace ONENET.Domain.ValueObjects
@@ -26,7 +25,7 @@ namespace ONENET.Domain.ValueObjects
             return new ScoreValue(value);
         }
 
-        public override IEnumerable<object> GetEqualityComponents()
+        protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return Value;
         }

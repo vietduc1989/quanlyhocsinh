@@ -1,0 +1,55 @@
+{
+  "version": 2,
+  "dgSpecHash": "S0U/rXKudOo=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\PC\\.gemini\\antigravity\\brain\\cc6d054e-ae32-430d-9691-c27766bb1bb2\\scratch\\quanlyhocsinh\\apps\\api\\src\\ONENET.Domain\\ONENET.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\PC\\.nuget\\packages\\fluentvalidation\\11.9.1\\fluentvalidation.11.9.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\fluentvalidation.dependencyinjectionextensions\\11.9.1\\fluentvalidation.dependencyinjectionextensions.11.9.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\mediatr\\12.3.0\\mediatr.12.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.entityframeworkcore\\10.0.0-preview.3.25171.6\\microsoft.entityframeworkcore.10.0.0-preview.3.25171.6.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\10.0.0-preview.3.25171.6\\microsoft.entityframeworkcore.abstractions.10.0.0-preview.3.25171.6.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\10.0.0-preview.3.25171.5\\microsoft.extensions.caching.abstractions.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.caching.memory\\10.0.0-preview.3.25171.5\\microsoft.extensions.caching.memory.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\8.0.0\\microsoft.extensions.configuration.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.configuration.binder\\8.0.0\\microsoft.extensions.configuration.binder.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\10.0.0-preview.3.25171.5\\microsoft.extensions.dependencyinjection.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0-preview.3.25171.5\\microsoft.extensions.dependencyinjection.abstractions.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.dependencymodel\\8.0.0\\microsoft.extensions.dependencymodel.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\8.0.0\\microsoft.extensions.diagnostics.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\8.0.0\\microsoft.extensions.fileproviders.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\8.0.0\\microsoft.extensions.hosting.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.logging\\10.0.0-preview.3.25171.5\\microsoft.extensions.logging.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.0-preview.3.25171.5\\microsoft.extensions.logging.abstractions.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.options\\10.0.0-preview.3.25171.5\\microsoft.extensions.options.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.0-preview.3.25171.5\\microsoft.extensions.primitives.10.0.0-preview.3.25171.5.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog\\3.1.1\\serilog.3.1.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.aspnetcore\\8.0.1\\serilog.aspnetcore.8.0.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.enrichers.environment\\2.3.0\\serilog.enrichers.environment.2.3.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.enrichers.process\\2.0.2\\serilog.enrichers.process.2.0.2.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.enrichers.thread\\3.1.0\\serilog.enrichers.thread.3.1.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.expressions\\4.0.0\\serilog.expressions.4.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.extensions.hosting\\8.0.0\\serilog.extensions.hosting.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.extensions.logging\\8.0.0\\serilog.extensions.logging.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.formatting.compact\\2.0.0\\serilog.formatting.compact.2.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.settings.configuration\\8.0.0\\serilog.settings.configuration.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.sinks.console\\5.0.1\\serilog.sinks.console.5.0.1.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.sinks.debug\\2.0.0\\serilog.sinks.debug.2.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\serilog.sinks.file\\5.0.0\\serilog.sinks.file.5.0.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1603",
+      "level": "Warning",
+      "message": "ONENET.Domain depends on Microsoft.EntityFrameworkCore (>= 10.0.0-preview.3.24172.4) but Microsoft.EntityFrameworkCore 10.0.0-preview.3.24172.4 was not found. Microsoft.EntityFrameworkCore 10.0.0-preview.3.25171.6 was resolved instead.",
+      "projectPath": "C:\\Users\\PC\\.gemini\\antigravity\\brain\\cc6d054e-ae32-430d-9691-c27766bb1bb2\\scratch\\quanlyhocsinh\\apps\\api\\src\\ONENET.Domain\\ONENET.Domain.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\PC\\.gemini\\antigravity\\brain\\cc6d054e-ae32-430d-9691-c27766bb1bb2\\scratch\\quanlyhocsinh\\apps\\api\\src\\ONENET.Domain\\ONENET.Domain.csproj",
+      "libraryId": "Microsoft.EntityFrameworkCore",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    }
+  ]
+}

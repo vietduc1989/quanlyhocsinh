@@ -1,4 +1,3 @@
-// QUAN-20260531-154643
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ONENET.Domain.Entities;

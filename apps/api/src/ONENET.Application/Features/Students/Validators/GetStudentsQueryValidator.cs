@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using FluentValidation;
 using ONENET.Application.Features.Students.Queries;
 

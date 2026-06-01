@@ -1,10 +1,9 @@
-// QUAN-20260530-2302
 using ONENET.Domain.Common;
 using ONENET.Domain.Enums; // Assuming Enums for potential future extensions, though not strictly required by current BRD
 
 namespace ONENET.Domain.Entities
 {
-    public class Class : BaseAuditableEntity
+    public class Class : BaseEntity
     {
         public string ClassCode { get; private set; }
         public string ClassName { get; private set; }

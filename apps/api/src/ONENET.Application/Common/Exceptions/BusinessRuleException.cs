@@ -1,4 +1,3 @@
-// QUAN-20260530-2302
 // Assume BusinessRuleException.cs already exists, if not, create it.
 using System;
 

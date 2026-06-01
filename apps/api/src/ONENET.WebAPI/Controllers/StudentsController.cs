@@ -1,12 +1,12 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ONENET.Application.Features.Students.Commands;
-using ONENET.Application.Features.Students.DTOs;
+using ONENET.Application.Features.Students.Dtos;
 using ONENET.Application.Features.Students.Queries;
+using ONENET.Application.Common.Models;
 using ONENET.WebAPI.Common;
 
 namespace ONENET.WebAPI.Controllers

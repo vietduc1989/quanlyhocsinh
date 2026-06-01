@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;

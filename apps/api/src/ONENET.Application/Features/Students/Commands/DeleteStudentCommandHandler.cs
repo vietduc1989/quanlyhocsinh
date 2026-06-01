@@ -1,4 +1,3 @@
-// QUAN-20260530-2301
 using MediatR;
 using Microsoft.Extensions.Logging;
 using ONENET.Application.Common.Exceptions;
@@ -43,9 +42,7 @@ namespace ONENET.Application.Features.Students.Commands
             if (await _studentRepository.HasRelatedDataAsync(request.Id, ct))
             {
                 throw new ConflictException(
-                    "Không thể xóa học sinh vì có dữ liệu liên quan. Vui lòng xử lý dữ liệu liên quan trước.",
-                    "STUDENT_HAS_RELATED_DATA",
-                    new { StudentId = request.Id });
+                    "Không thể xóa học sinh vì có dữ liệu liên quan. Vui lòng xử lý dữ liệu liên quan trước.");
             }
 
             student.IsDeleted = true; // Soft delete

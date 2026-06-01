@@ -7,6 +7,7 @@ using ONENET.Application.Common.Models;
 using ONENET.Application.Features.Students.Dtos;
 using ONENET.Domain.Entities;
 using ONENET.Domain.Interfaces;
+using ONENET.Application.Common.Interfaces;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,21 +16,21 @@ namespace ONENET.Application.Features.Students.Queries
 {
     public class GetStudentsPagedQueryHandler : IRequestHandler<GetStudentsPagedQuery, PagedList<StudentSummaryDto>>
     {
-        private readonly IStudentRepository _studentRepository;
+        private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
 
-        public GetStudentsPagedQueryHandler(IStudentRepository studentRepository, IMapper mapper)
+        public GetStudentsPagedQueryHandler(IApplicationDbContext context, IMapper mapper)
         {
-            _studentRepository = studentRepository;
+            _context = context;
             _mapper = mapper;
         }
 
         public async Task<PagedList<StudentSummaryDto>> Handle(GetStudentsPagedQuery request, CancellationToken ct)
         {
-            var query = _studentRepository.GetAll()
+            IQueryable<Student> query = _context.Students
                                           .AsNoTracking()
                                           .Include(s => s.Lop)
-                                          .Include(s => s.TrangThaiHocSinh);
+                                          .Include(s => s.TrangThai);
 
             // QUAN-20260530-2301-FR07: Search
             if (!string.IsNullOrWhiteSpace(request.SearchQuery))
@@ -59,7 +60,7 @@ namespace ONENET.Application.Features.Students.Queries
                 "mahocsinh" => request.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.MaHocSinh) : query.OrderBy(s => s.MaHocSinh),
                 "hovaten" => request.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.HoVaTen) : query.OrderBy(s => s.HoVaTen),
                 "lophoc" => request.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.Lop.TenLop) : query.OrderBy(s => s.Lop.TenLop),
-                "trangthai" => request.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.TrangThaiHocSinh.TenTrangThai) : query.OrderBy(s => s.TrangThaiHocSinh.TenTrangThai),
+                "trangthai" => request.SortOrder?.ToLower() == "desc" ? query.OrderByDescending(s => s.TrangThai.TenTrangThai) : query.OrderBy(s => s.TrangThai.TenTrangThai),
                 _ => query.OrderBy(s => s.HoVaTen) // Default sort
             };
 

@@ -1,4 +1,3 @@
-// QUAN-20260531-154643
 using ONENET.Domain.Common;
 
 namespace ONENET.Domain.Entities
@@ -34,7 +33,6 @@ namespace ONENET.Domain.Entities
             Name = name;
             Description = description;
             Credits = credits;
-            IsActive = isActive;
             UpdatedBy = updatedBy;
             UpdatedAt = DateTime.UtcNow;
         }
@@ -42,7 +40,6 @@ namespace ONENET.Domain.Entities
         // Method for soft deleting (setting IsActive to false)
         public void SoftDelete(string updatedBy)
         {
-            IsActive = false;
             IsDeleted = true; // Theo BaseEntity
             UpdatedBy = updatedBy;
             UpdatedAt = DateTime.UtcNow;

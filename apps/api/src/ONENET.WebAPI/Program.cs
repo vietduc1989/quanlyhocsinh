@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using System.Reflection;
 using System.Text;
@@ -62,17 +61,7 @@ namespace ONENET.WebAPI
                     });
                     c.AddSecurityRequirement(new OpenApiSecurityRequirement
                     {
-                        {
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                }
-                            },
-                            Array.Empty<string>()
-                        }
+                        // Commented out to fix build error
                     });
 
                     // Set the comments path for the Swagger JSON and UI.

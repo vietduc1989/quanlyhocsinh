@@ -1,4 +1,3 @@
-// QUAN-20260531-154643
 using System.Security.Claims;
 using ONENET.Application.Common.Interfaces;
 

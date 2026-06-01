@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using System.Net;
 

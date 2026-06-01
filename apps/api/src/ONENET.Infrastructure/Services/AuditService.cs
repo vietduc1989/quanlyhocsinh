@@ -1,4 +1,3 @@
-// QUAN-20260531-154643
 using Microsoft.Extensions.Logging;
 using ONENET.Domain.Entities;
 using ONENET.Domain.Interfaces;

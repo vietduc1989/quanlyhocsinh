@@ -1,0 +1,35 @@
+is_global = true
+build_property.TargetFramework = net10.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = ONENET.WebAPI
+build_property.RootNamespace = ONENET.WebAPI
+build_property.ProjectDir = C:\Users\PC\.gemini\antigravity\brain\cc6d054e-ae32-430d-9691-c27766bb1bb2\scratch\quanlyhocsinh\apps\api\src\ONENET.WebAPI\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 10.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\PC\.gemini\antigravity\brain\cc6d054e-ae32-430d-9691-c27766bb1bb2\scratch\quanlyhocsinh\apps\api\src\ONENET.WebAPI
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/PC/.gemini/antigravity/brain/cc6d054e-ae32-430d-9691-c27766bb1bb2/scratch/quanlyhocsinh/apps/api/src/ONENET.Application/bin/Debug/net10.0/ONENET.Application.xml]
+build_metadata.AdditionalFiles.TargetPath = 
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/.gemini/antigravity/brain/cc6d054e-ae32-430d-9691-c27766bb1bb2/scratch/quanlyhocsinh/apps/api/src/ONENET.Domain/bin/Debug/net10.0/ONENET.Domain.xml]
+build_metadata.AdditionalFiles.TargetPath = 
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/PC/.gemini/antigravity/brain/cc6d054e-ae32-430d-9691-c27766bb1bb2/scratch/quanlyhocsinh/apps/api/src/ONENET.Infrastructure/bin/Debug/net10.0/ONENET.Infrastructure.xml]
+build_metadata.AdditionalFiles.TargetPath = 
+build_metadata.AdditionalFiles.CssScope = 

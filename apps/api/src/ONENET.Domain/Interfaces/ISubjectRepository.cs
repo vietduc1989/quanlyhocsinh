@@ -1,4 +1,3 @@
-// QUAN-20260531-154643
 using ONENET.Domain.Entities;
 using System.Linq.Expressions;
 

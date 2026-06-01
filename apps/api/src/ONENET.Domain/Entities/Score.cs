@@ -1,4 +1,4 @@
-// QUAN-20260531-154643
+using ONENET.Domain.Common;
 using ONENET.Domain.ValueObjects;
 
 namespace ONENET.Domain.Entities

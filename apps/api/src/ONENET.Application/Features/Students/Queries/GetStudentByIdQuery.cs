@@ -1,7 +1,6 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using MediatR;
-using ONENET.Application.Features.Students.DTOs;
+using ONENET.Application.Features.Students.Dtos;
 
 namespace ONENET.Application.Features.Students.Queries
 {

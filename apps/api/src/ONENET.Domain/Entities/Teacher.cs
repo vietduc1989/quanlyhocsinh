@@ -1,10 +1,9 @@
-// QUAN-20260530-2302
 // Assume Teacher.cs already exists, adding ICollection<Class> for bidirectional navigation
 using ONENET.Domain.Common;
 
 namespace ONENET.Domain.Entities
 {
-    public class Teacher : BaseAuditableEntity
+    public class Teacher : BaseEntity
     {
         public string FullName { get; private set; }
         // ... other teacher properties ...

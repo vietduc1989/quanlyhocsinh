@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ONENET.Domain.Entities;
@@ -103,7 +102,7 @@ namespace ONENET.Infrastructure.Persistence.Configurations
             builder.Property(s => s.RowVersion)
                 .HasColumnName("row_version")
                 .IsConcurrencyToken()
-                .UseXminAsConcurrencyToken(); // Uses PostgreSQL's xmin column
+                .IsRowVersion(); // Uses PostgreSQL's xmin column
         }
     }
 }

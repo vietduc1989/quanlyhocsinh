@@ -1,4 +1,3 @@
-// QUAN-20260530-2302
 using ONENET.Domain.Entities;
 
 namespace ONENET.Domain.Interfaces

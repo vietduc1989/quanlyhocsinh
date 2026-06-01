@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ONENET.Application.Common.Interfaces;

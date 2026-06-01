@@ -1,4 +1,12 @@
-// QUAN-20260531-154643
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+
 namespace ONENET.Application.Common.Models
 {
     public class PaginatedList<T>
@@ -30,7 +38,6 @@ namespace ONENET.Application.Common.Models
         }
     }
 
-    // Extension method to make it easier to create paginated lists
     public static class QueryableExtensions
     {
         public static Task<PaginatedList<TDestination>> ToPaginatedListAsync<TSource, TDestination>(

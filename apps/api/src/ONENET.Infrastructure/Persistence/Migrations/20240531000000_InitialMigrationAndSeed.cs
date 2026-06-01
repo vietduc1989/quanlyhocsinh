@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata; // Required for UseXminAsConcurrencyToken

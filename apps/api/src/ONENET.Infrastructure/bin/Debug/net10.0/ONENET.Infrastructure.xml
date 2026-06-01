@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ONENET.Infrastructure</name>
+    </assembly>
+    <members>
+        <member name="T:ONENET.Infrastructure.Persistence.Migrations.InitialMigrationAndSeed">
+            <inheritdoc />
+        </member>
+        <member name="M:ONENET.Infrastructure.Persistence.Migrations.InitialMigrationAndSeed.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:ONENET.Infrastructure.Persistence.Migrations.InitialMigrationAndSeed.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

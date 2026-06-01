@@ -1,4 +1,3 @@
-// QUAN-20260530-2301
 namespace ONENET.Application.Common.Models
 {
     public abstract class PaginationParameters

@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using MediatR;
 using ONENET.Domain.Enums;
@@ -16,5 +15,5 @@ namespace ONENET.Application.Features.Students.Commands
         Guid LopId,
         DateTime NgayNhapHoc,
         Guid TrangThaiId
-    ) : IRequest<Guid>;
+    ) : IRequest<ONENET.Application.Features.Students.Dtos.StudentIdDto>;
 }

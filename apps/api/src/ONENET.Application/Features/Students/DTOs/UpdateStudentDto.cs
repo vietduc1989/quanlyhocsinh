@@ -1,8 +1,7 @@
-<!-- QUAN-20260530-2301 -->
 using System;
 using ONENET.Domain.Enums;
 
-namespace ONENET.Application.Features.Students.DTOs
+namespace ONENET.Application.Features.Students.Dtos
 {
     public class UpdateStudentDto
     {

@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

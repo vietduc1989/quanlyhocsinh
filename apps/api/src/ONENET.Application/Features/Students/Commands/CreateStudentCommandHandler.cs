@@ -40,12 +40,12 @@ namespace ONENET.Application.Features.Students.Commands
 
         public async Task<StudentIdDto> Handle(CreateStudentCommand request, CancellationToken ct)
         {
-            var studentDto = request.Student;
+            var studentDto = request;
 
             // QUAN-20260530-2301-BR01: Mã Học sinh duy nhất
-            if (await _studentRepository.ExistsByMaHocSinhAsync(studentDto.MaHocSinh, null, ct))
+            if (!await _studentRepository.IsMaHocSinhUniqueAsync(studentDto.MaHocSinh, null, ct))
             {
-                throw new ValidationException(nameof(studentDto.MaHocSinh), $"Mã Học sinh '{studentDto.MaHocSinh}' đã tồn tại. Vui lòng chọn mã khác.");
+                throw new ValidationException(new[] { new FluentValidation.Results.ValidationFailure(nameof(studentDto.MaHocSinh), $"Mã Học sinh '{studentDto.MaHocSinh}' đã tồn tại. Vui lòng chọn mã khác.") });
             }
 
             // Check if LopId exists
@@ -68,14 +68,13 @@ namespace ONENET.Application.Features.Students.Commands
                 studentDto.NgaySinh,
                 studentDto.GioiTinh,
                 studentDto.DiaChi,
-                studentDto.SDTPhuHuynh,
+                studentDto.SdtPhuHuynh,
                 studentDto.EmailPhuHuynh,
                 studentDto.LopId,
                 studentDto.NgayNhapHoc,
-                studentDto.TrangThaiId
+                studentDto.TrangThaiId,
+                _currentUser.UserId ?? "System"
             );
-
-            student.CreatedBy = _currentUser.UserId;
 
             await _studentRepository.AddAsync(student, ct);
             await _unitOfWork.SaveChangesAsync(ct);

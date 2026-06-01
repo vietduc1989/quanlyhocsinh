@@ -1,4 +1,3 @@
-// QUAN-20260530-2301
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -46,14 +45,14 @@ namespace ONENET.Application.Features.Students.Commands
                 throw new NotFoundException(nameof(Student), request.Id);
             }
 
-            var studentDto = request.Student;
+            var studentDto = request;
 
             // QUAN-20260530-2301-BR01: Mã Học sinh duy nhất (nếu thay đổi)
             if (studentDto.MaHocSinh is not null && student.MaHocSinh != studentDto.MaHocSinh)
             {
-                if (await _studentRepository.ExistsByMaHocSinhAsync(studentDto.MaHocSinh, student.Id, ct))
+                if (!(await _studentRepository.IsMaHocSinhUniqueAsync(studentDto.MaHocSinh, student.Id, ct)))
                 {
-                    throw new ValidationException(nameof(studentDto.MaHocSinh), $"Mã Học sinh '{studentDto.MaHocSinh}' đã được sử dụng bởi học sinh khác.");
+                    throw new Exception("Validation failed");
                 }
             }
 
@@ -83,15 +82,13 @@ namespace ONENET.Application.Features.Students.Commands
                 studentDto.NgaySinh,
                 studentDto.GioiTinh,
                 studentDto.DiaChi,
-                studentDto.SDTPhuHuynh,
+                studentDto.SdtPhuHuynh,
                 studentDto.EmailPhuHuynh,
                 studentDto.LopId,
                 studentDto.NgayNhapHoc,
-                studentDto.TrangThaiId
+                studentDto.TrangThaiId,
+                _currentUser.UserId ?? "System"
             );
-
-            student.UpdatedBy = _currentUser.UserId;
-            student.UpdatedAt = DateTime.UtcNow;
 
             _studentRepository.Update(student);
             await _unitOfWork.SaveChangesAsync(ct);

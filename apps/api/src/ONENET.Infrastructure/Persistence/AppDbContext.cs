@@ -1,4 +1,3 @@
-<!-- QUAN-20260530-2301 -->
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,8 @@ namespace ONENET.Infrastructure.Persistence
             _currentUser = currentUser;
         }
 
-        public DbSet<Student> Students { get; set; } = default!;
+        public DbSet<Student> Students { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; } = default!;
         public DbSet<Lop> Lops { get; set; } = default!;
         public DbSet<TrangThaiHocSinh> TrangThaiHocSinhs { get; set; } = default!;
 

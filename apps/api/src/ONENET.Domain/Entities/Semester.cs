@@ -1,4 +1,4 @@
-// QUAN-20260531-154643
+using ONENET.Domain.Common;
 namespace ONENET.Domain.Entities
 {
     // Placeholder entity for Semester, assumed to exist externally.

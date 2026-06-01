@@ -1,6 +1,5 @@
-<!-- QUAN-20260530-2301 -->
 using AutoMapper;
-using ONENET.Application.Features.Students.DTOs;
+using ONENET.Application.Features.Students.Dtos;
 using ONENET.Domain.Entities;
 using ONENET.Domain.Enums;
 
