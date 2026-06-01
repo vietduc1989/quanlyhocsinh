@@ -1,31 +1,52 @@
-// QUAN-20260530-2302
-// Assume PaginatedList.cs already exists, creating a basic version if not.
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+// QUAN-20260531-154643
 namespace ONENET.Application.Common.Models
 {
     public class PaginatedList<T>
     {
         public IReadOnlyList<T> Items { get; }
-        public int PageNumber { get; }
-        public int TotalPages { get; }
-        public int TotalCount { get; }
+        public int PageIndex { get; }
         public int PageSize { get; }
+        public int TotalCount { get; }
+        public int TotalPages { get; }
 
-        public PaginatedList(IReadOnlyList<T> items, int count, int pageNumber, int pageSize)
+        public PaginatedList(IReadOnlyList<T> items, int count, int pageIndex, int pageSize)
         {
-            PageNumber = pageNumber;
+            PageIndex = pageIndex;
+            PageSize = pageSize;
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
             TotalCount = count;
-            PageSize = pageSize;
             Items = items;
         }
 
-        public bool HasPreviousPage => PageNumber > 1;
+        public bool HasPreviousPage => PageIndex > 1;
+        public bool HasNextPage => PageIndex < TotalPages;
 
-        public bool HasNextPage => PageNumber < TotalPages;
+        public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+        {
+            var count = await source.CountAsync(cancellationToken);
+            var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+
+            return new PaginatedList<T>(items, count, pageIndex, pageSize);
+        }
+    }
+
+    // Extension method to make it easier to create paginated lists
+    public static class QueryableExtensions
+    {
+        public static Task<PaginatedList<TDestination>> ToPaginatedListAsync<TSource, TDestination>(
+            this IQueryable<TSource> source,
+            IMapper mapper,
+            int pageIndex,
+            int pageSize,
+            CancellationToken cancellationToken = default)
+            where TSource : class
+            where TDestination : class
+        {
+            return PaginatedList<TDestination>.CreateAsync(
+                source.ProjectTo<TDestination>(mapper.ConfigurationProvider),
+                pageIndex,
+                pageSize,
+                cancellationToken);
+        }
     }
 }
