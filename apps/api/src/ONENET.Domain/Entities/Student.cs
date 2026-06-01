@@ -1,48 +1,79 @@
-// QUAN-20260530-2302
-// Assume Student.cs already exists, adding ClassId and Class navigation property
+// QUAN-20260530-2301
 using ONENET.Domain.Common;
 
-namespace ONENET.Domain.Entities
+namespace ONENET.Domain.Entities;
+
+public class Student : BaseEntity
 {
-    public class Student : BaseAuditableEntity
+    public string MaHocSinh { get; private set; } = default!;
+    public string HoVaTen { get; private set; } = default!;
+    public DateTime NgaySinh { get; private set; }
+    public string GioiTinh { get; private set; } = default!; // "Nam", "Nữ", "Khác"
+    public string? DiaChi { get; private set; }
+    public string? SdtPhuHuynh { get; private set; }
+    public string? EmailPhuHuynh { get; private set; }
+    public Guid LopId { get; private set; }
+    public DateTime NgayNhapHoc { get; private set; }
+    public Guid TrangThaiId { get; private set; }
+
+    public uint RowVersion { get; private set; } // Concurrency token for PostgreSQL xmin
+
+    // Navigation properties
+    public Lop Lop { get; private set; } = default!;
+    public TrangThaiHocSinh TrangThaiHocSinh { get; private set; } = default!;
+
+    // Private constructor for EF Core
+    private Student() { }
+
+    public static Student Create(
+        string maHocSinh,
+        string hoVaTen,
+        DateTime ngaySinh,
+        string gioiTinh,
+        string? diaChi,
+        string? sdtPhuHuynh,
+        string? emailPhuHuynh,
+        Guid lopId,
+        DateTime ngayNhapHoc,
+        Guid trangThaiId)
     {
-        public string FullName { get; private set; }
-        // ... other student properties ...
-
-        public Guid? ClassId { get; private set; } // Foreign key to Class (nullable)
-
-        // Navigation property
-        public Class? Class { get; private set; }
-
-        private Student() { }
-
-        // Assuming existing factory/update methods. Adding a constructor for example.
-        public Student(string fullName, Guid? classId, string createdBy)
+        return new Student
         {
-            FullName = fullName;
-            ClassId = classId;
-            CreatedBy = createdBy;
-            CreatedAt = DateTime.UtcNow;
-        }
+            MaHocSinh = maHocSinh,
+            HoVaTen = hoVaTen,
+            NgaySinh = ngaySinh,
+            GioiTinh = gioiTinh,
+            DiaChi = diaChi,
+            SdtPhuHuynh = sdtPhuHuynh,
+            EmailPhuHuynh = emailPhuHuynh,
+            LopId = lopId,
+            NgayNhapHoc = ngayNhapHoc,
+            TrangThaiId = trangThaiId
+        };
+    }
 
-        public void AssignClass(Guid? classId, string updatedBy)
-        {
-            ClassId = classId;
-            UpdatedBy = updatedBy;
-            UpdatedAt = DateTime.UtcNow;
-        }
-
-        // ... existing methods to update student details ...`r`n// QUAN-20260531-154643
-namespace ONENET.Domain.Entities
-{
-    // Placeholder entity for Student, assumed to exist externally.
-    // Inherits BaseEntity to conform to system conventions and allow FK relations.
-    public class Student : BaseEntity
+    public void Update(
+        string? maHocSinh,
+        string? hoVaTen,
+        DateTime? ngaySinh,
+        string? gioiTinh,
+        string? diaChi,
+        string? sdtPhuHuynh,
+        string? emailPhuHuynh,
+        Guid? lopId,
+        DateTime? ngayNhapHoc,
+        Guid? trangThaiId)
     {
-        public string Code { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-
-        // Navigation property for Scores (optional, but good for completeness)
-        // public ICollection<Score> Scores { get; private set; } = new List<Score>();
+        MaHocSinh = maHocSinh ?? MaHocSinh;
+        HoVaTen = hoVaTen ?? HoVaTen;
+        NgaySinh = ngaySinh ?? NgaySinh;
+        GioiTinh = gioiTinh ?? GioiTinh;
+        DiaChi = diaChi ?? DiaChi;
+        SdtPhuHuynh = sdtPhuHuynh ?? SdtPhuHuynh;
+        EmailPhuHuynh = emailPhuHuynh ?? EmailPhuHuynh;
+        LopId = lopId ?? LopId;
+        NgayNhapHoc = ngayNhapHoc ?? NgayNhapHoc;
+        TrangThaiId = trangThaiId ?? TrangThaiId;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

@@ -1,56 +1,92 @@
-// QUAN-20260530-2302
-// Assume StudentConfiguration.cs already exists, adding FK to Class`r`n// QUAN-20260531-154643
+// QUAN-20260530-2301
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using ONENET.Domain.Entities;
 
-namespace ONENET.Infrastructure.Persistence.Configurations
+namespace ONENET.Infrastructure.Persistence.Configurations;
+
+public class StudentConfiguration : IEntityTypeConfiguration<Student>
 {
-    // Minimal configuration for external Student entity to support FKs and queries
-    public class StudentConfiguration : IEntityTypeConfiguration<Student>
+    public void Configure(EntityTypeBuilder<Student> builder)
     {
-        public void Configure(EntityTypeBuilder<Student> builder)
-        {
-            builder.ToTable("students"); // Example table name
+        builder.ToTable("students"); // snake_case cho PostgreSQL
 
-            builder.HasKey(s => s.Id);
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasColumnName("id").HasColumnType("uuid");
 
-            builder.Property(s => s.FullName)
-                .HasColumnName("full_name")
-                .HasMaxLength(100)
-                .IsRequired();
+        builder.Property(x => x.MaHocSinh)
+            .HasColumnName("ma_hoc_sinh")
+            .HasMaxLength(20)
+            .IsRequired();
+        builder.HasIndex(x => x.MaHocSinh).IsUnique(); // QUAN-20260530-2301-BR01: Unique Index
 
-            builder.Property(s => s.ClassId)
-                .HasColumnName("class_id")
-                .IsRequired(false); // Nullable FK
+        builder.Property(x => x.HoVaTen)
+            .HasColumnName("ho_va_ten")
+            .HasMaxLength(100)
+            .IsRequired();
+        builder.HasIndex(x => x.HoVaTen); // Index to support search/sort
 
-            // BaseAuditableEntity properties
-            builder.Property(s => s.CreatedAt).HasColumnName("created_at").IsRequired();
-            builder.Property(s => s.CreatedBy).HasColumnName("created_by").HasMaxLength(256);
-            builder.Property(s => s.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(s => s.UpdatedBy).HasColumnName("updated_by").HasMaxLength(256);
-            builder.Property(s => s.IsDeleted).HasColumnName("is_deleted").IsRequired();
+        builder.Property(x => x.NgaySinh)
+            .HasColumnName("ngay_sinh")
+            .HasColumnType("date")
+            .IsRequired();
 
-            // Relationships
-            builder.HasOne(s => s.Class)
-                .WithMany(c => c.Students)
-                .HasForeignKey(s => s.ClassId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent deleting a class that has students
-            
-            builder.HasIndex(s => s.ClassId); // Index for efficient lookups`r`n            builder.ToTable("students"); // Assumed external table name
+        builder.Property(x => x.GioiTinh)
+            .HasColumnName("gioi_tinh")
+            .HasMaxLength(10)
+            .IsRequired();
 
-            builder.HasKey(s => s.Id);
-            builder.Property(s => s.Id).HasColumnName("id");
-            builder.Property(s => s.Code).HasColumnName("code").HasMaxLength(20).IsRequired();
-            builder.HasIndex(s => s.Code).IsUnique().HasDatabaseName("ix_students_code");
-            builder.Property(s => s.FullName).HasColumnName("full_name").HasMaxLength(255).IsRequired();
+        builder.Property(x => x.DiaChi)
+            .HasColumnName("dia_chi")
+            .HasMaxLength(255);
 
-            // BaseEntity audit fields
-            builder.Property(s => s.CreatedAt).HasColumnName("created_at");
-            builder.Property(s => s.CreatedBy).HasColumnName("created_by");
-            builder.Property(s => s.UpdatedAt).HasColumnName("updated_at");
-            builder.Property(s => s.UpdatedBy).HasColumnName("updated_by");
-            builder.Property(s => s.IsDeleted).HasColumnName("is_deleted");
-        }
+        builder.Property(x => x.SdtPhuHuynh)
+            .HasColumnName("sdt_phu_huynh")
+            .HasMaxLength(20);
+
+        builder.Property(x => x.EmailPhuHuynh)
+            .HasColumnName("email_phu_huynh")
+            .HasMaxLength(100);
+
+        builder.Property(x => x.LopId)
+            .HasColumnName("lop_id")
+            .HasColumnType("uuid")
+            .IsRequired();
+        builder.HasIndex(x => x.LopId); // FK Index
+
+        builder.Property(x => x.NgayNhapHoc)
+            .HasColumnName("ngay_nhap_hoc")
+            .HasColumnType("date")
+            .IsRequired();
+
+        builder.Property(x => x.TrangThaiId)
+            .HasColumnName("trang_thai_id")
+            .HasColumnType("uuid")
+            .IsRequired();
+        builder.HasIndex(x => x.TrangThaiId); // FK Index
+
+        // Audit fields
+        builder.Property(x => x.CreatedAt).HasColumnName("created_at").IsRequired();
+        builder.Property(x => x.CreatedBy).HasColumnName("created_by").HasMaxLength(50);
+        builder.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+        builder.Property(x => x.UpdatedBy).HasColumnName("updated_by").HasMaxLength(50);
+        builder.Property(x => x.IsDeleted).HasColumnName("is_deleted").IsRequired();
+
+        // Concurrency token using PostgreSQL xmin
+        builder.Property(x => x.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .IsConcurrencyToken();
+
+        // Relationships
+        builder.HasOne(s => s.Lop)
+            .WithMany()
+            .HasForeignKey(s => s.LopId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete if Lop still has students
+
+        builder.HasOne(s => s.TrangThaiHocSinh)
+            .WithMany()
+            .HasForeignKey(s => s.TrangThaiId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
     }
 }

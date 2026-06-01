@@ -1,8 +1,7 @@
-// QUAN-20260531-154643
-namespace ONENET.Application.Common.Interfaces
+// QUAN-20260530-2301
+namespace ONENET.Application.Common.Interfaces;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

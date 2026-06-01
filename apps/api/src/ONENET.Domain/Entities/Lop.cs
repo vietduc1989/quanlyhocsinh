@@ -1,22 +1,26 @@
 // QUAN-20260530-2301
 using ONENET.Domain.Common;
-using System;
-using System.Collections.Generic;
 
-namespace ONENET.Domain.Entities
+namespace ONENET.Domain.Entities;
+
+public class Lop : BaseEntity
 {
-    public class Lop : BaseEntity
+    public string TenLop { get; private set; } = default!;
+    public string? MoTa { get; private set; }
+
+    // Private constructor for EF Core and domain logic control
+    private Lop() { }
+
+    public Lop(string tenLop, string? moTa)
     {
-        public string TenLop { get; private set; } = default!;
-        public string? MoTa { get; private set; }
+        TenLop = tenLop;
+        MoTa = moTa;
+    }
 
-        public ICollection<Student> Students { get; private set; } = new HashSet<Student>(); // Navigation property
-
-        private Lop() { } // Private constructor for EF Core
-
-        public static Lop Create(string tenLop, string? moTa)
-        {
-            return new Lop { TenLop = tenLop, MoTa = moTa };
-        }
+    public void Update(string tenLop, string? moTa)
+    {
+        TenLop = tenLop;
+        MoTa = moTa;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

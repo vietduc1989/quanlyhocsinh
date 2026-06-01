@@ -2,34 +2,31 @@
 using Microsoft.EntityFrameworkCore;
 using ONENET.Domain.Entities;
 using ONENET.Domain.Interfaces;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ONENET.Infrastructure.Persistence.Repositories
+namespace ONENET.Infrastructure.Persistence.Repositories;
+
+public class LopRepository : ILopRepository
 {
-    public class LopRepository : ILopRepository
+    private readonly AppDbContext _dbContext;
+
+    public LopRepository(AppDbContext dbContext)
     {
-        private readonly AppDbContext _context;
+        _dbContext = dbContext;
+    }
 
-        public LopRepository(AppDbContext context)
-        {
-            _context = context;
-        }
+    public async Task<Lop?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _dbContext.Lops
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == id && !l.IsDeleted, ct);
+    }
 
-        public async Task<Lop?> GetByIdAsync(Guid id, CancellationToken ct = default)
-        {
-            return await _context.Lops.FindAsync(new object[] { id }, ct);
-        }
-
-        public async Task<Lop?> GetByTenLopAsync(string tenLop, CancellationToken ct = default)
-        {
-            return await _context.Lops.AsNoTracking().FirstOrDefaultAsync(l => l.TenLop == tenLop, ct);
-        }
-
-        public async Task AddAsync(Lop lop, CancellationToken ct = default)
-        {
-            await _context.Lops.AddAsync(lop, ct);
-        }
+    public async Task<IReadOnlyList<Lop>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _dbContext.Lops
+            .AsNoTracking()
+            .Where(l => !l.IsDeleted)
+            .OrderBy(l => l.TenLop)
+            .ToListAsync(ct);
     }
 }

@@ -1,121 +1,48 @@
-// QUAN-20260530-2302
-// Assume AppDbContext.cs already exists, adding DbSet<Class>
+// QUAN-20260530-2301
 using Microsoft.EntityFrameworkCore;
 using ONENET.Application.Common.Interfaces;
+using ONENET.Domain.Common;
 using ONENET.Domain.Entities;
+using ONENET.Infrastructure.Persistence.Interceptors;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace ONENET.Infrastructure.Persistence
+namespace ONENET.Infrastructure.Persistence;
+
+public class AppDbContext : DbContext, IUnitOfWork
 {
-    public class AppDbContext : DbContext, IApplicationDbContext
+    private readonly AuditableEntitySaveChangesInterceptor _auditableEntitySaveChangesInterceptor;
+
+    public AppDbContext(
+        DbContextOptions<AppDbContext> options,
+        AuditableEntitySaveChangesInterceptor auditableEntitySaveChangesInterceptor)
+        : base(options)
     {
-        private readonly ICurrentUser _currentUser; // For BaseAuditableEntity`r`n// QUAN-20260531-154643
-using Microsoft.EntityFrameworkCore;
-using ONENET.Application.Common.Interfaces; // For IAppDbContext
-using ONENET.Domain.Entities;
-using ONENET.Domain.Common; // For BaseEntity`r`nusing System.Reflection;
+        _auditableEntitySaveChangesInterceptor = auditableEntitySaveChangesInterceptor;
+    }
 
-namespace ONENET.Infrastructure.Persistence
-{
-    public class AppDbContext : DbContext, IAppDbContext, IUnitOfWork
+    public DbSet<Student> Students { get; set; } = default!;
+    public DbSet<Lop> Lops { get; set; } = default!;
+    public DbSet<TrangThaiHocSinh> TrangThaiHocSinhs { get; set; } = default!;
+
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        private readonly ICurrentUser _currentUser; // To populate CreatedBy/UpdatedBy
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser currentUser)
-            : base(options)
-        {
-            _currentUser = currentUser;
-        }
+        // Configure Global Query Filters for soft delete
+        builder.Entity<Student>().HasQueryFilter(s => !s.IsDeleted);
+        builder.Entity<Lop>().HasQueryFilter(l => !l.IsDeleted);
+        builder.Entity<TrangThaiHocSinh>().HasQueryFilter(t => !t.IsDeleted);
 
-        public DbSet<Class> Classes { get; set; }
-        public DbSet<Student> Students { get; set; } // Assume exists
-        public DbSet<Teacher> Teachers { get; set; } // Assume exists
+        base.OnModelCreating(builder);
+    }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())`r`n        public DbSet<Score> Scores => Set<Score>();
-        public DbSet<Student> Students => Set<Student>();
-        public DbSet<Subject> Subjects => Set<Subject>();
-        public DbSet<Semester> Semesters => Set<Semester>();`r`n        public DbSet<Subject> Subjects => Set<Subject>();
-        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.AddInterceptors(_auditableEntitySaveChangesInterceptor);
+    }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-
-            // Configure global query filter for soft delete for BaseEntity inheritors
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
-                {
-                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(e => !((BaseEntity)e).IsDeleted);
-                }
-            }
-
-            base.OnModelCreating(modelBuilder);`r`n            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-            // Global Query Filter for soft delete as per guideline
-            builder.Entity<Subject>().HasQueryFilter(s => !s.IsDeleted);
-
-            base.OnModelCreating(builder);
-        }
-
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            foreach (var entry in ChangeTracker.Entries<BaseEntity>())
-            {
-                switch (entry.State)
-                {
-                    case EntityState.Added:
-                        entry.Entity.CreatedBy = _currentUser.UserName ?? "System";`r`n                        entry.Entity.CreatedBy = _currentUser.UserName ?? "system_user";
-                        entry.Entity.CreatedAt = DateTime.UtcNow;
-                        entry.Entity.IsDeleted = false;
-                        break;
-                    case EntityState.Modified:
-                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "System";
-                        entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        // For soft delete, IsDeleted is explicitly set in entity/command handler
-                        break;
-                    case EntityState.Deleted:
-                        // This case should be rare due to soft delete.
-                        // If a hard delete is performed, it bypasses soft delete, but our commands use soft delete.
-                        if (!entry.Entity.IsDeleted)
-                        {
-                            entry.State = EntityState.Modified;
-                            entry.Entity.IsDeleted = true;
-                            entry.Entity.UpdatedBy = _currentUser.UserName ?? "System";
-                            entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        }
-                        break;
-                    case EntityState.Deleted:
-                        entry.State = EntityState.Modified; // Perform soft delete
-                        entry.Entity.IsDeleted = true;
-                        entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        entry.Entity.UpdatedBy = _currentUser.UserId;
-                        break;
-                }
-            }
-
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-            // Add global query filter for soft delete
-            modelBuilder.Entity<Class>().HasQueryFilter(c => !c.IsDeleted);
-            modelBuilder.Entity<Student>().HasQueryFilter(s => !s.IsDeleted);
-            modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
-
-            base.OnModelCreating(modelBuilder);`r`n`r`n                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "system_user";
-                        entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        break;
-                }
-            }
-            return await base.SaveChangesAsync(cancellationToken);
-        }
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }
