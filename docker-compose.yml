@@ -1,12 +1,8 @@
 version: '3.8'
 
-# Load environment variables from .env file
-env_file:
-  - .env
-
 services:
   db:
-    image: postgres:13-alpine
+    image: postgres:15-alpine
     restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -16,69 +12,60 @@ services:
       - db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s # Allow time for the DB to initialize
-    networks:
-      - quanlylophoch_network
-
-  api:
-    build:
-      context: . # Context is the root of the project where apps/ is located
-      dockerfile: apps/api/Dockerfile
-    restart: always
-    ports:
-      - "${API_PORT}:${API_PORT}" # Map host port to container port
-    environment:
-      ASPNETCORE_URLS: http://+:${API_PORT}
-      # Connection string for .NET API to PostgreSQL
-      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-    depends_on:
-      db:
-        condition: service_healthy # Ensure DB is healthy before starting API
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:${API_PORT}/health"] # Assuming a /health endpoint in the API
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s # Allow time for API to start up and expose endpoint
     networks:
-      - quanlylophoch_network
+      - app-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: always
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    environment:
+      # These variables will be consumed by the .NET API
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy # Wait for the database to be healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"] # Assuming a /health endpoint in your API
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s # Give the API more time to start up
+    networks:
+      - app-network
 
   web:
     build:
-      context: . # Context is the root of the project where apps/ is located
+      context: .
       dockerfile: apps/web/Dockerfile
     restart: always
     ports:
-      - "${WEB_PORT}:80" # Map host port to container Nginx port
+      - "3000:80" # Map host port 3000 to container port 80 (Nginx)
     environment:
-      # This variable will be used by the React Vite app (e.g., during build or runtime)
-      # to know where the API is. For local development, it can be 'http://localhost:${API_PORT}'
-      # but within the Docker network, 'http://api:${API_PORT}' is correct for direct service-to-service communication
-      # For frontend accessing it from the browser, it typically goes via Nginx proxy or direct host access.
-      # The Nginx config handles `/api/` proxying to `http://api:${API_PORT}`
-      # So, the VITE_API_BASE_URL should point to the web server itself for relative paths, or proxy through Nginx.
-      # If the React app needs to know the *external* API URL, it would be 'http://localhost:${API_PORT}' for local dev
-      # but given the Nginx proxy, the React app should call relative '/api/' path.
-      # This variable might not be directly used by the Nginx image itself, but by the build process of the React app.
-      # Let's assume the React app uses relative paths and Nginx handles the proxy.
-      # If the React app makes direct calls, this would be crucial.
-      # For optimal local dev with docker-compose and Nginx proxy, the client-side app typically makes requests to the same origin, e.g., /api/endpoint.
-      # The Nginx configuration in the web Dockerfile then proxies `/api/` to the `api` service.
-      # If the frontend code directly constructs URLs without relative paths, this env var becomes relevant.
-      # Let's set it assuming direct calls might be made or for documentation.
-      VITE_API_BASE_URL: http://web/api # Frontend will call /api which Nginx proxies to api service
+      # This variable will be used by the React app (e.g., in .env.production, or directly in JS)
+      # Ensure your React app can pick this up at runtime if needed,
+      # otherwise it should be baked in during the build stage of the Dockerfile.
+      # For Vite, usually VITE_ prefixed variables are injected.
+      VITE_API_BASE_URL: http://localhost:8080 # For local dev, refer to host directly
+      # In a more advanced setup, for inter-service communication from web to api (if web directly proxies)
+      # VITE_API_BASE_URL: http://api:8080
     depends_on:
       api:
-        condition: service_healthy # Ensure API is healthy before starting Web (useful if web relies on API at startup)
+        condition: service_healthy # Wait for the API to be healthy
     networks:
-      - quanlylophoch_network
-
-volumes:
-  db_data: # Persistent volume for PostgreSQL data
+      - app-network
 
 networks:
-  quanlylophoch_network: # Custom network for all services
+  app-network:
     driver: bridge
+
+volumes:
+  db_data:

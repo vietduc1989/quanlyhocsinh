@@ -1,49 +1,44 @@
-# syntax=docker/dockerfile:1.4
+# Stage 1: Build the React Vite application
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json first to leverage Docker cache
-COPY ["apps/web/package.json", "apps/web/package-lock.json", "./"]
+# Copy package.json and package-lock.json and install dependencies
+COPY ["apps/web/package.json", "apps/web/package-lock.json*", "./"]
+RUN npm install --frozen-lockfile
 
-# Install dependencies
-RUN npm ci
-
-# Copy the rest of the web source code
-COPY ["apps/web", "./"]
+# Copy the rest of the application code
+COPY . .
+WORKDIR "/app/apps/web"
 
 # Build the React Vite application
+# Set the VITE_API_BASE_URL during build for production, or handle at runtime if preferred
+# For simplicity, assuming runtime env var will be handled by Nginx config or JS itself
 RUN npm run build
 
-FROM nginx:1.25-alpine AS final
+# Stage 2: Serve the application with Nginx
+FROM nginx:alpine AS final
 
-# Remove default Nginx config to replace with our own (optional, but good practice)
+# Create a non-root user for security. Nginx's default config often runs as `nginx` user.
+# Ensure the nginx user has access to the /var/cache/nginx directory.
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN chown -R appuser:appgroup /var/cache/nginx /var/run /var/log/nginx
+# Use the nginx user if default config allows, or switch to 'appuser' if more control needed.
+# For simplicity and standard Nginx setup, we'll let Nginx manage its user.
+# If you need full custom user control, you would configure Nginx to run as 'appuser'.
+# For now, let's just make sure the content is accessible.
+
+# Remove default Nginx configuration
 RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy a custom Nginx configuration to serve the static files
-# This assumes you have a custom nginx.conf in apps/web/nginx.conf
-# For simplicity, we'll create a basic one directly here.
-RUN echo "server { \
-    listen 80; \
-    location / { \
-        root /usr/share/nginx/html; \
-        try_files \$uri \$uri/ /index.html; \
-    } \
-    location /api/ { \
-        proxy_pass http://api:8080/; \
-        proxy_set_header Host \$host; \
-        proxy_set_header X-Real-IP \$remote_addr; \
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for; \
-        proxy_set_header X-Forwarded-Proto \$scheme; \
-    } \
-}" > /etc/nginx/conf.d/quanlylophoch.conf
+# Copy custom Nginx configuration
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy the built React app to the Nginx public directory
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
-# Copy the built static files from the build stage
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Nginx runs as a non-root 'nginx' user by default, which is good for security.
-# The files copied will be owned by root, but the 'nginx' user has read access.
+# Ensure Nginx serves files owned by the Nginx user
+RUN chown -R nginx:nginx /usr/share/nginx/html
 
 EXPOSE 80
 
