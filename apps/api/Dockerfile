@@ -1,5 +1,5 @@
 # Stage 1: Build the .NET application
-FROM mcr.microsoft.com/dotnet/sdk:10.0-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /src
@@ -19,7 +19,7 @@ WORKDIR "/src/apps/api"
 RUN dotnet publish "YourApiProject.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Stage 3: Create the final runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 
 # Create a non-root user for security
 RUN adduser --system --group --no-create-home appuser && chown -R appuser:appuser /app
