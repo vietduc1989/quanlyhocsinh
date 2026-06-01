@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-CourseManagementDB}
+      POSTGRES_USER: ${DB_USER:-course_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-SecurePassword123}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-course_admin} -d ${DB_NAME:-CourseManagementDB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - onenet-network
+
+  api:
+    build:
+      context: . # Build context is the root of the repository
+      dockerfile: apps/api/Dockerfile # Path to the API Dockerfile
+    restart: always
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${DB_NAME:-CourseManagementDB};Username=${DB_USER:-course_admin};Password=${DB_PASSWORD:-SecurePassword123}
+      # Add other API specific environment variables as needed
+    depends_on:
+      db:
+        condition: service_healthy # Ensure DB is healthy before starting API
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"] # Assuming a '/health' endpoint for API health checks
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s # Give the API service time to start up before checking health
+    networks:
+      - onenet-network
+
+  web:
+    build:
+      context: . # Build context is the root of the repository
+      dockerfile: apps/web/Dockerfile # Path to the Web Dockerfile
+    restart: always
+    ports:
+      - "80:80" # Map host port 80 to container port 80 for the Nginx server
+    environment:
+      # React apps (especially with Vite) need environment variables prefixed with VITE_
+      # Set the API base URL. If frontend talks directly to the API service within Docker network, use http://api:8080.
+      # If frontend accesses API via the host's exposed port, use http://localhost:8080.
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://api:8080}
+    depends_on:
+      api:
+        condition: service_started # Web depends on API service starting
+    networks:
+      - onenet-network
+
+volumes:
+  db_data: # Named volume for persistent database data
+
+networks:
+  onenet-network:
+    driver: bridge # Custom bridge network for inter-service communication

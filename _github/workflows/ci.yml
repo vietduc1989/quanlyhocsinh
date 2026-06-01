@@ -1,0 +1,100 @@
+name: CI/CD Pipeline - Course Management
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x' # Specify the exact .NET 10 version if known, or 10.0.x for latest minor
+
+      - name: Restore API dependencies
+        working-directory: ./apps/api
+        run: dotnet restore
+
+      - name: Build API
+        working-directory: ./apps/api
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run API Tests
+        working-directory: ./apps/api
+        # Assuming your API project includes tests or there's a separate test project.
+        # Adjust command if tests are in a different project/location.
+        run: dotnet test --no-build --verbosity normal
+
+      - name: Build Docker Image for API
+        run: |
+          # Build the Docker image for the API service
+          docker build \
+            --tag onenet/course-api:latest \
+            --file apps/api/Dockerfile \
+            . # The build context is the root of the repository to access apps/api properly
+        # In a real CI/CD setup, you would add steps here to push the Docker image
+        # to a container registry (e.g., GitHub Container Registry, Docker Hub, AWS ECR).
+        # Example:
+        # - name: Login to Docker Hub
+        #   uses: docker/login-action@v3
+        #   with:
+        #     username: ${{ secrets.DOCKER_USERNAME }}
+        #     password: ${{ secrets.DOCKER_PASSWORD }}
+        # - name: Push API Docker Image
+        #   run: docker push onenet/course-api:latest
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use a stable LTS Node.js version
+
+      - name: Restore Web dependencies
+        working-directory: ./apps/web
+        run: npm install --frozen-lockfile # Use --frozen-lockfile for CI/CD consistency
+
+      - name: Run Web Linting
+        working-directory: ./apps/web
+        # Assuming a 'lint' script is defined in package.json (e.g., using ESLint)
+        run: npm run lint
+
+      - name: Run Web Tests
+        working-directory: ./apps/web
+        # Assuming 'npm test' runs Jest, React Testing Library, or similar
+        run: npm test -- --coverage # --coverage is optional for coverage reports
+
+      - name: Build Web Application
+        working-directory: ./apps/web
+        # This will generate the static files (e.g., in a 'dist' folder)
+        run: npm run build
+
+      - name: Build Docker Image for Web
+        run: |
+          # Build the Docker image for the Web service
+          docker build \
+            --tag onenet/course-web:latest \
+            --file apps/web/Dockerfile \
+            . # The build context is the root of the repository to access apps/web properly
+        # Similar to the API, you would push this image to a container registry here.
+        # Example:
+        # - name: Login to Docker Hub
+        #   uses: docker/login-action@v3
+        #   with:
+        #     username: ${{ secrets.DOCKER_USERNAME }}
+        #     password: ${{ secrets.DOCKER_PASSWORD }}
+        # - name: Push Web Docker Image
+        #   run: docker push onenet/course-web:latest
