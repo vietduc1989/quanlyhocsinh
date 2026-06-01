@@ -1,11 +1,8 @@
-// QUAN-20260530-2301
-using System.Threading;
-using System.Threading.Tasks;
-
+// QUAN-20260531-154643
 namespace ONENET.Application.Common.Interfaces
 {
     public interface IUnitOfWork
     {
-        Task<int> SaveChangesAsync(CancellationToken ct = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
