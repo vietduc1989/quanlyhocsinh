@@ -1,99 +1,120 @@
-// QUAN-20260530-2301
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+// QUAN-20260531-154643
 using Serilog;
-using ONENET.Application;
-using ONENET.Infrastructure;
-using ONENET.WebAPI.Middleware;
-using ONENET.Application.Common.Interfaces; // For ICurrentUser
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using ONENET.Application; // Add application services
+using ONENET.Infrastructure; // Add infrastructure services
+using ONENET.WebAPI.Middleware; // For global exception middleware
+using Microsoft.OpenApi.Models; // For Swagger Authorization
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
-try
+// Add services to the container.
+builder.Services.AddControllers();
+
+// Add Application and Infrastructure layers
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// Add API Explorer and Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    var builder = WebApplication.CreateBuilder(args);
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ONENET Scores API", Version = "v1" });
 
-    builder.Host.UseSerilog((context, services, configuration) => configuration
-        .ReadFrom.Configuration(context.Configuration)
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console());
-
-    // Add services to the container.
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    // Register Clean Architecture layers
-    builder.Services.AddApplication();
-    builder.Services.AddInfrastructure(builder.Configuration);
-
-    // Register ICurrentUser service (example using HttpContextAccessor)
-    builder.Services.AddHttpContextAccessor();
-    // Assuming a concrete implementation of ICurrentUser exists that uses HttpContextAccessor
-    // For this example, we might need a basic CurrentUserService:
-    builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
-
-
-    var app = builder.Build();
-
-    // Configure the HTTP request pipeline.
-
-    // Add Global Exception Middleware at the very top
-    app.UseMiddleware<GlobalExceptionMiddleware>();
-
-    if (app.Environment.IsDevelopment())
+    // Add JWT Authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
-    app.UseHttpsRedirection();
-
-    // Authentication and Authorization
-    app.UseAuthentication(); // This should come before UseAuthorization
-    app.UseAuthorization();
-
-    app.MapControllers();
-
-    app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "Application terminated unexpectedly");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
-
-// Minimal CurrentUserService for demonstration, should be in Infrastructure/Services/CurrentUserService.cs
-namespace ONENET.Infrastructure.Services
-{
-    using Microsoft.AspNetCore.Http;
-    using System.Security.Claims;
-    using ONENET.Application.Common.Interfaces;
-
-    public class CurrentUserService : ICurrentUser
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\n\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public CurrentUserService(IHttpContextAccessor httpContextAccessor)
         {
-            _httpContextAccessor = httpContextAccessor;
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
         }
+    });
+});
 
-        public string? UserId => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        public string? UserName => _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Name);
-        public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
-
-        public bool IsInRole(string roleName)
+// Configure JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            return _httpContextAccessor.HttpContext?.User?.IsInRole(roleName) ?? false;
-        }
-    }
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]!))
+        };
+    });
+
+// Configure Authorization (Policy-based can be added here if needed, beyond role-based)
+builder.Services.AddAuthorization(options =>
+{
+    // Example policy for Admin role
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    // Example policy for Teacher role
+    options.AddPolicy("TeacherOnly", policy => policy.RequireRole("Teacher"));
+    // A combined policy could be useful if specific endpoints need either
+    options.AddPolicy("AdminOrTeacher", policy => policy.RequireRole("Admin", "Teacher"));
+});
+
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(builder.Configuration["CorsSettings:AllowedOrigins"]?.Split(';') ?? Array.Empty<string>())
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials(); // If using cookies/auth headers with specific origins
+    });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseSerilogRequestLogging(); // Add Serilog for request logging
+
+app.UseHttpsRedirection();
+
+app.UseCors(); // Use CORS middleware
+
+app.UseMiddleware<GlobalExceptionMiddleware>(); // Use global exception handler
+
+app.UseAuthentication(); // Must be before Authorization
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();

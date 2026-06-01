@@ -1,18 +1,14 @@
-// QUAN-20260530-2301
+// QUAN-20260531-154643
 using Microsoft.EntityFrameworkCore;
-using ONENET.Application.Common.Interfaces;
-using ONENET.Domain.Common;
+using ONENET.Application.Common.Interfaces; // For IAppDbContext
 using ONENET.Domain.Entities;
-using System;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+using ONENET.Domain.Common; // For BaseEntity
 
 namespace ONENET.Infrastructure.Persistence
 {
-    public class AppDbContext : DbContext, IUnitOfWork
+    public class AppDbContext : DbContext, IAppDbContext, IUnitOfWork
     {
-        private readonly ICurrentUser _currentUser;
+        private readonly ICurrentUser _currentUser; // To populate CreatedBy/UpdatedBy
 
         public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser currentUser)
             : base(options)
@@ -20,37 +16,59 @@ namespace ONENET.Infrastructure.Persistence
             _currentUser = currentUser;
         }
 
-        // Add new DbSets for Student management
+        public DbSet<Score> Scores => Set<Score>();
         public DbSet<Student> Students => Set<Student>();
-        public DbSet<Lop> Lops => Set<Lop>();
-        public DbSet<TrangThaiHocSinh> TrangThaiHocSinhs => Set<TrangThaiHocSinh>();
+        public DbSet<Subject> Subjects => Set<Subject>();
+        public DbSet<Semester> Semesters => Set<Semester>();
+        public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Apply configurations for entities in this assembly
-            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-            base.OnModelCreating(builder);
+            // Configure global query filter for soft delete for BaseEntity inheritors
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    modelBuilder.Entity(entityType.ClrType).HasQueryFilter(e => !((BaseEntity)e).IsDeleted);
+                }
+            }
+
+            base.OnModelCreating(modelBuilder);
         }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())
             {
                 switch (entry.State)
                 {
                     case EntityState.Added:
+                        entry.Entity.CreatedBy = _currentUser.UserName ?? "System";
                         entry.Entity.CreatedAt = DateTime.UtcNow;
-                        entry.Entity.CreatedBy = _currentUser.UserId;
+                        entry.Entity.IsDeleted = false;
                         break;
                     case EntityState.Modified:
+                        entry.Entity.UpdatedBy = _currentUser.UserName ?? "System";
                         entry.Entity.UpdatedAt = DateTime.UtcNow;
-                        entry.Entity.UpdatedBy = _currentUser.UserId;
+                        // For soft delete, IsDeleted is explicitly set in entity/command handler
+                        break;
+                    case EntityState.Deleted:
+                        // This case should be rare due to soft delete.
+                        // If a hard delete is performed, it bypasses soft delete, but our commands use soft delete.
+                        if (!entry.Entity.IsDeleted)
+                        {
+                            entry.State = EntityState.Modified;
+                            entry.Entity.IsDeleted = true;
+                            entry.Entity.UpdatedBy = _currentUser.UserName ?? "System";
+                            entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        }
                         break;
                 }
             }
 
-            return await base.SaveChangesAsync(ct);
+            return await base.SaveChangesAsync(cancellationToken);
         }
     }
 }
