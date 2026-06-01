@@ -1,5 +1,5 @@
-// QUAN-20260531-154643
-using System.Text.Json.Serialization;
+<!-- QUAN-20260530-2301 -->
+using System.Collections.Generic;
 
 namespace ONENET.WebAPI.Common
 {
@@ -7,49 +7,90 @@ namespace ONENET.WebAPI.Common
     {
         public bool Success { get; set; }
         public string? Message { get; set; }
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public T? Data { get; set; }
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public List<ApiError>? Errors { get; set; }
+        public List<ApiError> Errors { get; set; } = new List<ApiError>();
 
-        public static ApiResponse<T> Success(T data, string? message = null)
+        public static ApiResponse<T> SuccessResponse(T data, string? message = null)
         {
-            return new ApiResponse<T> { Success = true, Data = data, Message = message };
+            return new ApiResponse<T>
+            {
+                Success = true,
+                Message = message,
+                Data = data
+            };
         }
 
-        public static ApiResponse<T> Success(string? message = null)
+        public static ApiResponse<T> ErrorResponse(string message, List<ApiError>? errors = null)
         {
-            return new ApiResponse<T> { Success = true, Message = message };
+            return new ApiResponse<T>
+            {
+                Success = false,
+                Message = message,
+                Data = default,
+                Errors = errors ?? new List<ApiError>()
+            };
         }
 
-        public static ApiResponse<T> Failure(string message, List<ApiError>? errors = null)
+        public static ApiResponse<T> ValidationFailureResponse(IDictionary<string, string[]> validationErrors, string message = "Validation failed")
         {
-            return new ApiResponse<T> { Success = false, Message = message, Errors = errors };
+            var apiErrors = new List<ApiError>();
+            foreach (var error in validationErrors)
+            {
+                foreach (var msg in error.Value)
+                {
+                    apiErrors.Add(new ApiError { Field = error.Key, Message = msg });
+                }
+            }
+            return ErrorResponse(message, apiErrors);
+        }
+    }
+
+    public class ApiResponse
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public object? Data { get; set; }
+        public List<ApiError> Errors { get; set; } = new List<ApiError>();
+
+        public static ApiResponse SuccessResponse(object? data = null, string? message = null)
+        {
+            return new ApiResponse
+            {
+                Success = true,
+                Message = message,
+                Data = data
+            };
+        }
+
+        public static ApiResponse ErrorResponse(string message, List<ApiError>? errors = null)
+        {
+            return new ApiResponse
+            {
+                Success = false,
+                Message = message,
+                Data = null,
+                Errors = errors ?? new List<ApiError>()
+            };
+        }
+
+        public static ApiResponse ValidationFailureResponse(IDictionary<string, string[]> validationErrors, string message = "Validation failed")
+        {
+            var apiErrors = new List<ApiError>();
+            foreach (var error in validationErrors)
+            {
+                foreach (var msg in error.Value)
+                {
+                    apiErrors.Add(new ApiError { Field = error.Key, Message = msg });
+                }
+            }
+            return ErrorResponse(message, apiErrors);
         }
     }
 
     public class ApiError
     {
-        public string Field { get; set; } = default!;
-        public string Message { get; set; } = default!;
-    }
-
-    // Overload for non-generic ApiResponse when no data is expected, or for general status
-    public class ApiResponse
-    {
-        public bool Success { get; set; }
-        public string? Message { get; set; }
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-        public List<ApiError>? Errors { get; set; }
-
-        public static ApiResponse Success(string? message = null)
-        {
-            return new ApiResponse { Success = true, Message = message };
-        }
-
-        public static ApiResponse Failure(string message, List<ApiError>? errors = null)
-        {
-            return new ApiResponse { Success = false, Message = message, Errors = errors };
-        }
+        public string? Field { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string? Code { get; set; } // Optional: for custom error codes
     }
 }

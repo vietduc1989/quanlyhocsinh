@@ -1,14 +1,13 @@
-// QUAN-20260531-154643
+<!-- QUAN-20260530-2301 -->
+using System;
+
 namespace ONENET.Application.Common.Interfaces
 {
     public interface ICurrentUser
     {
         string? UserId { get; }
-        string? UserName { get; } // For audit trail
-        bool IsInRole(string roleName);
-        bool IsAuthenticated { get; }`r`n        string? UserName { get; }
-        string?[] Roles { get; }
+        string? UserName { get; }
         bool IsAuthenticated { get; }
-        bool IsInRole(string role);
+        bool IsInRole(string roleName);
     }
 }

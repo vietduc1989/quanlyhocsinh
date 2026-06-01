@@ -1,10 +1,17 @@
+<!-- QUAN-20260530-2301 -->
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ONENET.Application</RootNamespace>
+    <AssemblyName>ONENET.Application</AssemblyName>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\ONENET.Domain\ONENET.Domain.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+  </ItemGroup>
+
 </Project>

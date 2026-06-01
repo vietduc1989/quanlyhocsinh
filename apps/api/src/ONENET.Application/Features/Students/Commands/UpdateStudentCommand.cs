@@ -1,9 +1,21 @@
-// QUAN-20260530-2301
-using MediatR;
-using ONENET.Application.Features.Students.Dtos;
+<!-- QUAN-20260530-2301 -->
 using System;
+using MediatR;
+using ONENET.Domain.Enums;
 
 namespace ONENET.Application.Features.Students.Commands
 {
-    public record UpdateStudentCommand(Guid Id, UpdateStudentDto Student) : IRequest<SuccessDto>;
+    public record UpdateStudentCommand(
+        Guid Id,
+        string? MaHocSinh,
+        string? HoVaTen,
+        DateTime? NgaySinh,
+        GioiTinh? GioiTinh,
+        string? DiaChi,
+        string? SdtPhuHuynh,
+        string? EmailPhuHuynh,
+        Guid? LopId,
+        DateTime? NgayNhapHoc,
+        Guid? TrangThaiId
+    ) : IRequest<Unit>;
 }
