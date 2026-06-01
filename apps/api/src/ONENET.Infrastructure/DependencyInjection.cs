@@ -1,4 +1,5 @@
-// QUAN-20260530-2301
+// QUAN-20260530-2302
+// Assume DependencyInjection.cs already exists, adding registrations.
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,32 +7,29 @@ using ONENET.Application.Common.Interfaces;
 using ONENET.Domain.Interfaces;
 using ONENET.Infrastructure.Persistence;
 using ONENET.Infrastructure.Persistence.Repositories;
-using ONENET.Infrastructure.Services; // Assuming CurrentUserService might be here
+using ONENET.Infrastructure.Services; // Example, assuming some services
 
 namespace ONENET.Infrastructure
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            // Configure PostgreSQL DbContext
             services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName))
+                    .UseSnakeCaseNamingConvention()); // For PostgreSQL snake_case
 
+            services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<AppDbContext>());
             services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<AppDbContext>());
 
-            // Register repositories
-            services.AddScoped<IStudentRepository, StudentRepository>();
-            services.AddScoped<ILopRepository, LopRepository>();
-            services.AddScoped<ITrangThaiHocSinhRepository, TrangThaiHocSinhRepository>();
+            // Register Repositories
+            services.AddScoped<IClassRepository, ClassRepository>();
+            // Add other repositories here
 
-            // Register ICurrentUser service (assuming implementation in Infrastructure/Services)
-            // If ICurrentUser is already registered elsewhere (e.g., WebAPI for HttpContext access),
-            // this line might not be needed or would be a specific implementation.
-            // For this task, we will assume a basic HttpContextAccessor-based implementation
-            // exists in Infrastructure/Services or is provided by the WebAPI layer.
-            // For now, let's just make sure it's accessible.
-            // services.AddScoped<ICurrentUser, CurrentUserService>(); // Example if CurrentUserService is in Infrastructure
+            // Register other infrastructure services (e.g., IDateTime, IEmailSender)
+            services.AddTransient<IDateTime, DateTimeService>(); // Example service
 
             return services;
         }

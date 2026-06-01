@@ -1,9 +1,14 @@
-// QUAN-20260530-2301
+// QUAN-20260530-2302
+// Assume GlobalExceptionMiddleware.cs already exists, modifying to handle new exceptions.
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using ONENET.Application.Common.Exceptions;
 using ONENET.WebAPI.Models;
+using Serilog.Context;
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -34,46 +39,54 @@ namespace ONENET.WebAPI.Middleware
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
-            var response = ApiResponse.Error("Đã xảy ra lỗi không mong muốn.");
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            var httpStatusCode = HttpStatusCode.InternalServerError;
+            var response = new ApiResponse { Success = false };
 
-            switch (exception)
+            using (LogContext.PushProperty("ExceptionType", exception.GetType().Name))
+            using (LogContext.PushProperty("ErrorMessage", exception.Message))
             {
-                case ValidationException validationException:
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    response = ApiResponse.Error(
-                        "Validation Error",
-                        new System.Collections.Generic.List<ApiError>(
-                            validationException.Errors.Select(e => new ApiError(e.Key, e.Value.First()))
-                        ));
-                    _logger.LogWarning(validationException, "Validation failed: {Message}", validationException.Message);
-                    break;
-                case NotFoundException notFoundException:
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
-                    response = ApiResponse.Error(notFoundException.Message);
-                    _logger.LogWarning(notFoundException, "Resource not found: {Message}", notFoundException.Message);
-                    break;
-                case ConflictException conflictException:
-                    context.Response.StatusCode = StatusCodes.Status409Conflict;
-                    response = ApiResponse.Error(
-                        conflictException.Message,
-                        conflictException.ErrorCode ?? "CONFLICT",
-                        conflictException.Message,
-                        conflictException.ConflictDetails
-                    );
-                    _logger.LogWarning(conflictException, "Conflict occurred: {Message}", conflictException.Message);
-                    break;
-                // Add more specific exceptions here (e.g., ForbiddenException, UnauthorizedException)
-                default:
-                    _logger.LogError(exception, "An unhandled exception occurred: {Message}", exception.Message);
-                    // For generic 500 errors, avoid exposing sensitive details.
-                    response = ApiResponse.Error("Đã xảy ra lỗi nội bộ. Vui lòng thử lại sau.");
-                    break;
+                switch (exception)
+                {
+                    case ValidationException validationException:
+                        httpStatusCode = HttpStatusCode.BadRequest;
+                        response.Message = "Validation Error";
+                        response.Errors = new List<ApiError>();
+                        foreach (var error in validationException.Errors)
+                        {
+                            response.Errors.Add(new ApiError { Field = error.PropertyName, Message = error.ErrorMessage });
+                        }
+                        _logger.LogWarning(validationException, "Validation exception occurred for request {Path}", context.Request.Path);
+                        break;
+                    case NotFoundException notFoundException:
+                        httpStatusCode = HttpStatusCode.NotFound;
+                        response.Message = notFoundException.Message;
+                        _logger.LogWarning(notFoundException, "Not Found exception occurred for request {Path}", context.Request.Path);
+                        break;
+                    case BusinessRuleException businessRuleException:
+                        httpStatusCode = HttpStatusCode.Conflict; // 409 Conflict for business rule violations
+                        response.Message = businessRuleException.Message;
+                        _logger.LogWarning(businessRuleException, "Business Rule exception occurred for request {Path}", context.Request.Path);
+                        break;
+                    case UnauthorizedAccessException:
+                        httpStatusCode = HttpStatusCode.Forbidden; // 403 Forbidden
+                        response.Message = "Access Denied.";
+                        _logger.LogWarning(exception, "Unauthorized access attempt for request {Path}", context.Request.Path);
+                        break;
+                    case DbUpdateConcurrencyException concurrencyException:
+                        httpStatusCode = HttpStatusCode.Conflict;
+                        response.Message = "Dữ liệu đã được cập nhật bởi người dùng khác. Vui lòng thử lại.";
+                        _logger.LogWarning(concurrencyException, "Concurrency conflict detected for request {Path}", context.Request.Path);
+                        break;
+                    default:
+                        response.Message = "An unexpected error occurred.";
+                        _logger.LogError(exception, "Unhandled exception occurred for request {Path}", context.Request.Path);
+                        break;
+                }
             }
 
-            var result = JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            await context.Response.WriteAsync(result);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)httpStatusCode;
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         }
     }
 }

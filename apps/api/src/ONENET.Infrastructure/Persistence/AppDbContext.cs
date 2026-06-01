@@ -1,18 +1,17 @@
-// QUAN-20260530-2301
+// QUAN-20260530-2302
+// Assume AppDbContext.cs already exists, adding DbSet<Class>
 using Microsoft.EntityFrameworkCore;
 using ONENET.Application.Common.Interfaces;
-using ONENET.Domain.Common;
 using ONENET.Domain.Entities;
-using System;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ONENET.Infrastructure.Persistence
 {
-    public class AppDbContext : DbContext, IUnitOfWork
+    public class AppDbContext : DbContext, IApplicationDbContext
     {
-        private readonly ICurrentUser _currentUser;
+        private readonly ICurrentUser _currentUser; // For BaseAuditableEntity
 
         public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser currentUser)
             : base(options)
@@ -20,22 +19,13 @@ namespace ONENET.Infrastructure.Persistence
             _currentUser = currentUser;
         }
 
-        // Add new DbSets for Student management
-        public DbSet<Student> Students => Set<Student>();
-        public DbSet<Lop> Lops => Set<Lop>();
-        public DbSet<TrangThaiHocSinh> TrangThaiHocSinhs => Set<TrangThaiHocSinh>();
+        public DbSet<Class> Classes { get; set; }
+        public DbSet<Student> Students { get; set; } // Assume exists
+        public DbSet<Teacher> Teachers { get; set; } // Assume exists
 
-        protected override void OnModelCreating(ModelBuilder builder)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // Apply configurations for entities in this assembly
-            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
-            base.OnModelCreating(builder);
-        }
-
-        public override async Task<int> SaveChangesAsync(CancellationToken ct = default)
-        {
-            foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+            foreach (var entry in ChangeTracker.Entries<BaseAuditableEntity>())
             {
                 switch (entry.State)
                 {
@@ -47,10 +37,28 @@ namespace ONENET.Infrastructure.Persistence
                         entry.Entity.UpdatedAt = DateTime.UtcNow;
                         entry.Entity.UpdatedBy = _currentUser.UserId;
                         break;
+                    case EntityState.Deleted:
+                        entry.State = EntityState.Modified; // Perform soft delete
+                        entry.Entity.IsDeleted = true;
+                        entry.Entity.UpdatedAt = DateTime.UtcNow;
+                        entry.Entity.UpdatedBy = _currentUser.UserId;
+                        break;
                 }
             }
 
-            return await base.SaveChangesAsync(ct);
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+            // Add global query filter for soft delete
+            modelBuilder.Entity<Class>().HasQueryFilter(c => !c.IsDeleted);
+            modelBuilder.Entity<Student>().HasQueryFilter(s => !s.IsDeleted);
+            modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
