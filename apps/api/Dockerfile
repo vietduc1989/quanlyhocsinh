@@ -4,6 +4,7 @@ ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /src
 # Copy everything
+COPY Directory.Build.props ./
 COPY apps/api/ ./apps/api/
 
 WORKDIR /src/apps/api
