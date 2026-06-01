@@ -133,6 +133,7 @@ namespace ONENET.WebAPI
                 app.UseAuthorization();
 
                 app.MapControllers();
+                app.MapGet("/health", () => "OK");
 
                 app.Run();
             }
