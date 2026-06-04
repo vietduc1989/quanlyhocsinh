@@ -1,0 +1,13 @@
+# Ignore everything
+**/*
+
+# Except these files and folders
+!bin/
+!obj/
+!Properties/
+!appsettings.json
+!appsettings.*.json
+!WebAPI.csproj
+!Dockerfile
+!SolutionName.sln
+!src/

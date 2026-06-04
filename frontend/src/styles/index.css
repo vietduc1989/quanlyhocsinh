@@ -1,0 +1,42 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Inter', sans-serif; /* Recommend adding Inter font or similar */
+}
+
+/* Basic scrollbar styling for premium feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: theme('colors.gray.100');
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: theme('colors.gray.300');
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.gray.400');
+}
+
+/* Dark mode scrollbar (if implemented) */
+.dark ::-webkit-scrollbar-track {
+  background: theme('colors.gray.800');
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: theme('colors.gray.600');
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.gray.500');
+}
