@@ -1,0 +1,54 @@
+# Global ignore for pnpm
+.pnpm-store/
+
+# Node modules
+frontend/node_modules/
+frontend/.env
+frontend/.env.*.local
+
+# Build outputs
+frontend/dist/
+frontend/build/
+frontend/tmp/
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend .NET
+backend/src/**/bin/
+backend/src/**/obj/
+backend/src/**/.vs/
+backend/src/**/.vscode/
+backend/src/**/.user
+backend/src/**/appsettings.*.json
+backend/src/**/Properties/launchSettings.json
+backend/src/**/secrets.json
+backend/src/**/*.log
+backend/src/**/*.pdb
+backend/src/**/*.tmp
+backend/src/**/*.bak
+backend/src/**/docker-compose.*.yml
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Test Results
+backend/tests/**/TestResults/
+
+# VS Code
+.vscode/
+
+# Other
+*.bak
+*.orig
+*.swp
+*~
+# Additional ignore rules for specific files or folders if needed
