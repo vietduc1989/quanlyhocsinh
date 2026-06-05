@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using ONENET.Application.Common.Interfaces;
 using ONENET.Domain.Entities;
+using ONENET.Domain.Common;
 using ONENET.Infrastructure.Persistence.Configurations;
 using System.Linq;
 using System.Reflection;
@@ -31,11 +32,19 @@ namespace ONENET.Infrastructure.Persistence
             {
                 if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
                 {
-                    builder.Entity(entityType.ClrType).HasQueryFilter(e => !((BaseEntity)e).IsDeleted);
+                    var method = typeof(ApplicationDbContext)
+                        .GetMethod(nameof(SetSoftDeleteFilter), BindingFlags.NonPublic | BindingFlags.Static)
+                        ?.MakeGenericMethod(entityType.ClrType);
+                    method?.Invoke(null, new[] { builder });
                 }
             }
 
             base.OnModelCreating(builder);
+        }
+
+        private static void SetSoftDeleteFilter<TEntity>(ModelBuilder builder) where TEntity : BaseEntity
+        {
+            builder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())

@@ -1,9 +1,11 @@
 // QUAN-20260604-153038
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ONENET.Application;
 using ONENET.Infrastructure;
+using ONENET.Infrastructure.Persistence;
 using ONENET.WebAPI.Middleware;
 using Serilog;
 using System.Text;
@@ -13,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Host.UseSerilog(); // Use Serilog for logging
+
+builder.Services.AddHealthChecks();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -94,6 +98,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Automatically apply database migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while migrating the database.");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -113,6 +131,8 @@ app.UseCors(); // Use CORS policy
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHealthChecks("/health");
 
 app.MapControllers();
 

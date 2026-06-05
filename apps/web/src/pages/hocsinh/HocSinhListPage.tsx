@@ -13,6 +13,7 @@ import {
   Flex,
   Tooltip,
   ActionIcon,
+  Text,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { Link, useNavigate } from 'react-router-dom';
@@ -95,16 +96,18 @@ const HocSinhListPage: React.FC = () => {
     setSearchParams((prev) => ({ ...prev, lopHocId: value || undefined, pageNumber: 1 }));
   };
 
-  const handleTrangThaiFilterChange = (value: TrangThaiHocSinh | null) => {
-    setSearchParams((prev) => ({ ...prev, trangThai: value || undefined, pageNumber: 1 }));
+  const handleTrangThaiFilterChange = (value: string | null) => {
+    setSearchParams((prev) => ({ ...prev, trangThai: (value as TrangThaiHocSinh) || undefined, pageNumber: 1 }));
   };
 
   const handlePageChange = (page: number) => {
     setSearchParams((prev) => ({ ...prev, pageNumber: page }));
   };
 
-  const handlePageSizeChange = (value: string) => {
-    setSearchParams((prev) => ({ ...prev, pageSize: parseInt(value, 10), pageNumber: 1 }));
+  const handlePageSizeChange = (value: string | null) => {
+    if (value) {
+      setSearchParams((prev) => ({ ...prev, pageSize: parseInt(value, 10), pageNumber: 1 }));
+    }
   };
 
   const handleClearFilters = () => {
@@ -248,8 +251,8 @@ const HocSinhListPage: React.FC = () => {
           boundaries={1}
         />
         <Text size="sm">
-          Hiển thị {Math.min((searchParams.pageNumber - 1) * searchParams.pageSize + 1, totalCount)} -{' '}
-          {Math.min(searchParams.pageNumber * searchParams.pageSize, totalCount)} trên {totalCount} học sinh
+          Hiển thị {Math.min(((searchParams.pageNumber ?? 1) - 1) * (searchParams.pageSize ?? 10) + 1, totalCount)} -{' '}
+          {Math.min((searchParams.pageNumber ?? 1) * (searchParams.pageSize ?? 10), totalCount)} trên {totalCount} học sinh
         </Text>
       </Group>
 

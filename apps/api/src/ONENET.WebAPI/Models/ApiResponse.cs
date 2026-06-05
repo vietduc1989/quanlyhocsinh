@@ -1,19 +1,21 @@
 // QUAN-20260604-153038
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace ONENET.WebAPI.Models
 {
     public class ApiResponse<T>
     {
-        public bool Success { get; private set; }
+        [JsonPropertyName("success")]
+        public bool IsSuccess { get; private set; }
         public T? Data { get; private set; }
         public string Message { get; private set; }
         public List<string> Errors { get; private set; }
 
         private ApiResponse(bool success, T? data, string message, List<string> errors)
         {
-            Success = success;
+            IsSuccess = success;
             Data = data;
             Message = message;
             Errors = errors;

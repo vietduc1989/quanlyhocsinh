@@ -18,8 +18,6 @@ export const theme = createTheme({
   },
   primaryColor: 'deep-blue',
   primaryShade: { light: 6, dark: 8 },
-  // Optional: dark mode setup, shadows, gradients for premium feel
-  defaultColorScheme: 'dark',
   shadows: {
     md: '1px 1px 3px rgba(0, 0, 0, .25)',
     xl: '5px 5px 20px rgba(0, 0, 0, .25)',
