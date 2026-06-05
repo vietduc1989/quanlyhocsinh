@@ -1,41 +1,22 @@
-# QUAN-20260604-153038
-# Stage 1: Build the React application
+# syntax=docker/dockerfile:1.4
 FROM node:20-alpine AS build
-
-# Set working directory
 WORKDIR /app
+COPY apps/web/package.json apps/web/package-lock.json ./
+RUN npm ci
 
-# Install pnpm globally
-RUN npm install -g pnpm@11.0.0-0 --force
+COPY apps/web/ ./
+RUN npm run build
 
-# Copy package.json, pnpm-lock.yaml, and pnpm-workspace.yaml
-COPY pnpm-workspace.yaml ./
-COPY apps/web/package.json apps/web/package.json
-COPY apps/web/pnpm-lock.yaml apps/web/pnpm-lock.yaml
+FROM nginx:stable-alpine AS final
+WORKDIR /etc/nginx/conf.d
+COPY --from=build /app/dist /usr/share/nginx/html
+# Remove default nginx config
+RUN rm default.conf
+# Add a custom nginx configuration to run as a non-root user
+COPY apps/web/nginx.conf .
 
-# Install dependencies (including dev dependencies)
-RUN pnpm install --frozen-lockfile
+# Switch to non-root user, 'nginx' user is typically pre-configured in nginx-alpine
+USER nginx
 
-# Copy the rest of the frontend source code
-COPY apps/web/src apps/web/src
-COPY apps/web/index.html apps/web/index.html
-COPY apps/web/tsconfig.json apps/web/tsconfig.json
-COPY apps/web/vite.config.ts apps/web/vite.config.ts
-
-# Build the application
-# Use the correct build command for your project. 'build' is defined in package.json.
-RUN cd apps/web && pnpm run build
-
-# Stage 2: Serve the application with Nginx
-FROM nginx:alpine AS production
-
-# Copy Nginx configuration
-# If you have a custom nginx.conf, place it here.
-# For a simple SPA, default Nginx config often works with correct root.
-COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-
-# Expose port 80
 EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
