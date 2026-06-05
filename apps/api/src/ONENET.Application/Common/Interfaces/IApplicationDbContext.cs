@@ -1,3 +1,4 @@
+// QUAN-20260604-153038
 using Microsoft.EntityFrameworkCore;
 using ONENET.Domain.Entities;
 using System.Threading;
@@ -7,11 +8,10 @@ namespace ONENET.Application.Common.Interfaces
 {
     public interface IApplicationDbContext
     {
-        DbSet<Student> Students { get; }
-        DbSet<Class> Classes { get; }
-        DbSet<Subject> Subjects { get; }
-        DbSet<Score> Scores { get; }
-        DbSet<Teacher> Teachers { get; }
+        DbSet<HocSinh> HocSinhs { get; }
+        DbSet<LopHoc> LopHocs { get; }
+        DbSet<HocSinhDiem> HocSinhDiems { get; } // For FR06 related data check
+
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }
 }

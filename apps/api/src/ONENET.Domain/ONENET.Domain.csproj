@@ -1,7 +1,9 @@
-<!-- QUAN-20260530-2301 -->
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ONENET.Domain</RootNamespace>
     <AssemblyName>ONENET.Domain</AssemblyName>
   </PropertyGroup>

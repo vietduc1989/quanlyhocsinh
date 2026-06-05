@@ -1,149 +1,119 @@
-using System;
-using System.Reflection;
-using System.Text;
+// QUAN-20260604-153038
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ONENET.Application;
 using ONENET.Infrastructure;
 using ONENET.WebAPI.Middleware;
 using Serilog;
-using Serilog.Events;
-using Serilog.Formatting.Compact;
+using System.Text;
+using System.Text.Json.Serialization;
 
-namespace ONENET.WebAPI
-{
-    public class Program
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Host.UseSerilog(); // Use Serilog for logging
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        public static void Main(string[] args)
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; // Handle circular references
+    });
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ONENET Student Management API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    {
         {
-            // Configure Serilog
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .Enrich.WithProperty("Application", "ONENET.WebAPI")
-                .WriteTo.Console()
-                .WriteTo.File(new CompactJsonFormatter(), "logs/log-.json", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
-            try
+            new OpenApiSecurityScheme
             {
-                Log.Information("Starting ONENET.WebAPI host");
-                var builder = WebApplication.CreateBuilder(args);
-
-                builder.Host.UseSerilog(); // Use Serilog for hosting logs
-
-                // Add services to the container.
-                builder.Services.AddHttpContextAccessor();
-                builder.Services.AddApplication();
-                builder.Services.AddInfrastructure(builder.Configuration);
-
-                builder.Services.AddControllers();
-                builder.Services.AddEndpointsApiExplorer();
-                builder.Services.AddSwaggerGen(c =>
+                Reference = new OpenApiReference
                 {
-                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "ONENET Student Management API", Version = "v1" });
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
 
-                    // Configure Swagger to use JWT Bearer
-                    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                    {
-                        Name = "Authorization",
-                        Type = SecuritySchemeType.Http,
-                        Scheme = "Bearer",
-                        BearerFormat = "JWT",
-                        In = ParameterLocation.Header,
-                        Description = "Enter 'Bearer' [space] and then your valid token in the text input below.\r\n\r\nExample: \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
-                    });
-                    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-                    {
-                        // Commented out to fix build error
-                    });
-
-                    // Set the comments path for the Swagger JSON and UI.
-                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                    c.IncludeXmlComments(xmlPath);
-                });
-
-                // Configure JWT Authentication
-                builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddJwtBearer(options =>
-                    {
-                        options.TokenValidationParameters = new TokenValidationParameters
-                        {
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                            ValidAudience = builder.Configuration["Jwt:Audience"],
-                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-                        };
-                    });
-                builder.Services.AddAuthorization(options =>
-                {
-                    // Define policies if needed, e.g., for specific permissions
-                    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
-                    options.AddPolicy("TeacherPolicy", policy => policy.RequireRole("Admin", "Teacher"));
-                });
-
-                // Configure CORS
-                builder.Services.AddCors(options =>
-                {
-                    options.AddDefaultPolicy(
-                        policy =>
-                        {
-                            policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>())
-                                .AllowAnyHeader()
-                                .AllowAnyMethod()
-                                .AllowCredentials(); // If you need to send cookies/auth headers
-                        });
-                });
-
-                var app = builder.Build();
-
-                // Configure the HTTP request pipeline.
-                if (app.Environment.IsDevelopment())
-                {
-                    app.UseSwagger();
-                    app.UseSwaggerUI(c =>
-                    {
-                        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ONENET Student Management API V1");
-                        c.RoutePrefix = "swagger"; // Access Swagger UI at /swagger
-                    });
-                    // Enable detailed error pages for development
-                    app.UseDeveloperExceptionPage();
-                }
-                else
-                {
-                    // Global exception handling for production
-                    app.UseGlobalExceptionMiddleware();
-                    app.UseHsts();
-                }
-
-                app.UseHttpsRedirection();
-                app.UseRouting();
-                app.UseCors(); // Use CORS middleware
-                app.UseAuthentication();
-                app.UseAuthorization();
-
-                app.MapControllers();
-
-                app.Run();
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "ONENET.WebAPI terminated unexpectedly");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            },
+            new List<string>()
         }
-    }
+    });
+});
+
+// Configure Authentication & Authorization
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured.")))
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    // Add other policies as needed
+});
+
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration["Cors:AllowedOrigins"]?.Split(';') ?? new string[] { "http://localhost:3000" })
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // If you use cookies or authorization headers
+        });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ONENET Student Management API v1");
+    });
 }
+
+// Global Exception Handling Middleware
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseHttpsRedirection();
+
+app.UseCors(); // Use CORS policy
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
