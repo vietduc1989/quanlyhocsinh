@@ -1,59 +1,36 @@
+// QUAN-20260604-153038
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 
 namespace ONENET.Application.Common.Models
 {
     public class PaginatedList<T>
     {
-        public IReadOnlyList<T> Items { get; }
-        public int PageIndex { get; }
-        public int PageSize { get; }
-        public int TotalCount { get; }
+        public IReadOnlyCollection<T> Items { get; }
+        public int PageNumber { get; }
         public int TotalPages { get; }
+        public int TotalCount { get; }
 
-        public PaginatedList(IReadOnlyList<T> items, int count, int pageIndex, int pageSize)
+        public PaginatedList(IReadOnlyCollection<T> items, int count, int pageNumber, int pageSize)
         {
-            PageIndex = pageIndex;
-            PageSize = pageSize;
+            PageNumber = pageNumber;
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
             TotalCount = count;
             Items = items;
         }
 
-        public bool HasPreviousPage => PageIndex > 1;
-        public bool HasNextPage => PageIndex < TotalPages;
+        public bool HasPreviousPage => PageNumber > 1;
+        public bool HasNextPage => PageNumber < TotalPages;
 
-        public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+        public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize)
         {
-            var count = await source.CountAsync(cancellationToken);
-            var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+            var count = await source.CountAsync();
+            var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            return new PaginatedList<T>(items, count, pageIndex, pageSize);
-        }
-    }
-
-    public static class QueryableExtensions
-    {
-        public static Task<PaginatedList<TDestination>> ToPaginatedListAsync<TSource, TDestination>(
-            this IQueryable<TSource> source,
-            IMapper mapper,
-            int pageIndex,
-            int pageSize,
-            CancellationToken cancellationToken = default)
-            where TSource : class
-            where TDestination : class
-        {
-            return PaginatedList<TDestination>.CreateAsync(
-                source.ProjectTo<TDestination>(mapper.ConfigurationProvider),
-                pageIndex,
-                pageSize,
-                cancellationToken);
+            return new PaginatedList<T>(items, count, pageNumber, pageSize);
         }
     }
 }

@@ -1,45 +1,41 @@
-# Stage 1: Build the React Vite application
+# QUAN-20260604-153038
+# Stage 1: Build the React application
 FROM node:20-alpine AS build
 
+# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json and install dependencies
-COPY ["apps/web/package.json", "apps/web/package-lock.json*", "./"]
-RUN npm install --frozen-lockfile
+# Install pnpm globally
+RUN npm install -g pnpm@11.0.0-0 --force
 
-# Copy the rest of the application code
-COPY . .
-WORKDIR "/app/apps/web"
+# Copy package.json, pnpm-lock.yaml, and pnpm-workspace.yaml
+COPY pnpm-workspace.yaml ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/web/pnpm-lock.yaml apps/web/pnpm-lock.yaml
 
-# Build the React Vite application
-# Set the VITE_API_BASE_URL during build for production, or handle at runtime if preferred
-# For simplicity, assuming runtime env var will be handled by Nginx config or JS itself
-RUN npm run build
+# Install dependencies (including dev dependencies)
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the frontend source code
+COPY apps/web/src apps/web/src
+COPY apps/web/index.html apps/web/index.html
+COPY apps/web/tsconfig.json apps/web/tsconfig.json
+COPY apps/web/vite.config.ts apps/web/vite.config.ts
+
+# Build the application
+# Use the correct build command for your project. 'build' is defined in package.json.
+RUN cd apps/web && pnpm run build
 
 # Stage 2: Serve the application with Nginx
-FROM nginx:alpine AS final
+FROM nginx:alpine AS production
 
-# Create a non-root user for security. Nginx's default config often runs as `nginx` user.
-# Ensure the nginx user has access to the /var/cache/nginx directory.
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN chown -R appuser:appgroup /var/cache/nginx /var/run /var/log/nginx
-# Use the nginx user if default config allows, or switch to 'appuser' if more control needed.
-# For simplicity and standard Nginx setup, we'll let Nginx manage its user.
-# If you need full custom user control, you would configure Nginx to run as 'appuser'.
-# For now, let's just make sure the content is accessible.
-
-# Remove default Nginx configuration
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom Nginx configuration
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy the built React app to the Nginx public directory
+# Copy Nginx configuration
+# If you have a custom nginx.conf, place it here.
+# For a simple SPA, default Nginx config often works with correct root.
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
-# Ensure Nginx serves files owned by the Nginx user
-RUN chown -R nginx:nginx /usr/share/nginx/html
-
+# Expose port 80
 EXPOSE 80
 
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,0 +1,11 @@
+# QUAN-20260604-153038
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# For esbuild postinstall issues with pnpm
+# See: https://github.com/evanw/esbuild/issues/2070
+# Workaround to allow esbuild to run postinstall script on pnpm
+# If you encounter issues with esbuild not installing correctly, add this:
+# hooks:
+#   postinstall: esbuild --install-canary
