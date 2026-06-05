@@ -11,12 +11,11 @@ import {
   LoadingOverlay,
   Box,
   Flex,
-  Input,
 } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconArrowLeft, IconSave } from '@tabler/icons-react';
+import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-react';
 import { HocSinhFormValues, GioiTinh, TrangThaiHocSinh, LopHocLookup } from '../../types/hocSinh';
 import { hocSinhService } from '../../api/hocSinhService';
 import dayjs from 'dayjs';
@@ -242,7 +241,7 @@ const HocSinhFormPage: React.FC = () => {
             <Button variant="default" onClick={() => navigate('/hoc-sinh')}>
               Hủy
             </Button>
-            <Button type="submit" leftSection={<IconSave size="1rem" />}>
+            <Button type="submit" leftSection={<IconDeviceFloppy size="1rem" />}>
               {isEditing ? 'Cập nhật' : 'Thêm mới'}
             </Button>
           </Group>
